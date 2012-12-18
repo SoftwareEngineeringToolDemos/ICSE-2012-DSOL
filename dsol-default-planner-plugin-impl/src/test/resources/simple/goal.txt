@@ -1,0 +1,1 @@
+goal(c, desired(response_time, 1000))

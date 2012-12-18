@@ -1,0 +1,12 @@
+start(
+initial1(a),
+initial2(b),
+initial3(c),
+initial0(d),
+initial1(e),
+initial2(f),
+initial3(g),
+initial0(h)
+)
+
+goal(postalt_action24(objectalt24_0))

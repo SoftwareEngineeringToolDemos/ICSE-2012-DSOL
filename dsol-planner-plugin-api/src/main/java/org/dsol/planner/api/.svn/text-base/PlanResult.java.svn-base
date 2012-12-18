@@ -1,0 +1,82 @@
+package org.dsol.planner.api;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.dsol.planner.api.util.Util;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
+public class PlanResult {
+
+	private List<Fact> initialState;
+	private Goal goal;
+	private List<State> states;
+	
+	private Plan plan;
+	
+	public PlanResult() {}
+
+	public PlanResult(List<Fact> initialState, Goal goal) {
+		this(new Plan(),initialState,goal);
+	}
+
+	
+	public PlanResult(Plan plan, List<Fact> initialState, Goal goal) {
+		this.plan = plan;
+		this.initialState = initialState;
+		this.goal = goal;
+		this.states = new ArrayList<State>();
+	}
+	
+	public boolean planFound(){
+		return plan != null;
+	}
+	
+	public Plan getPlan() {
+		return plan;
+	}
+	
+	public void addStep(AbstractAction step){
+		plan.addStep(step);
+	}
+	
+	public void addState(State state){
+		this.states.add(state);
+	}
+
+	public JsonObject toJSON() {
+		
+		JsonArray steps = new JsonArray();
+		Gson gson = new Gson();
+		for (AbstractAction step : plan.getSteps()) {
+			JsonObject stepJson = new JsonObject();
+			stepJson.addProperty("name", step.getName());
+			stepJson.add("params",gson.toJsonTree(step.getParamList()));
+			steps.add(stepJson);
+		}
+		
+		JsonArray states = new JsonArray();
+		for (State state : this.states) {
+			states.add(state.toJSON());
+		}
+		
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.add("plan", steps);
+		jsonObject.add("initial_state", gson.toJsonTree(Util.getFactsAsString(initialState)));
+		jsonObject.add("goal", gson.toJsonTree(Util.getFactsAsString(goal)));
+		jsonObject.add("states", states);
+		
+		return jsonObject;
+	}
+
+	public State getFinalState() {
+		if(!states.isEmpty()){
+			return states.get(states.size() - 1);	
+		}
+		return null;
+	}
+}
+

@@ -1,0 +1,40 @@
+package org.dsol;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.dsol.planner.api.AbstractAction;
+import org.dsol.planner.api.Plan;
+import org.junit.Assert;
+import org.junit.Test;
+
+
+public class PlanTest {
+	
+	@Test
+	public void setFirstActionsAsExecuted(){
+		Plan plan = getPlan1();
+		
+		//set 
+		plan.markFirstActionsAsExecuted(2);
+		Assert.assertTrue(plan.get(0).isExecuted());
+		Assert.assertTrue(plan.get(1).isExecuted());
+		Assert.assertTrue(!plan.get(2).isExecuted());
+		Assert.assertTrue(!plan.get(3).isExecuted());
+		Assert.assertTrue(!plan.get(4).isExecuted());
+		
+	}
+	
+	
+	public Plan getPlan1(){
+		
+		List<AbstractAction> actions = new ArrayList<AbstractAction>();
+		actions.add(new AbstractActionMock("getEvent(eventId)"));
+		actions.add(new AbstractActionMock("buyTicket(evt)"));
+		actions.add(new AbstractActionMock("bookFlight(from,evt.city,evt.date,evt.dayAfter)"));
+		actions.add(new AbstractActionMock("bookHotel(evt.city,evt.date,evt.dayAfter)"));
+		actions.add(new AbstractActionMock("payWithCreditCard(accommodationDetails)"));
+
+		return new Plan(actions);
+	}
+}

@@ -1,0 +1,12 @@
+start(
+	searchLocation(milan),
+	searchCoordinate(milanCoordinate),
+	searchQuery(pizza),
+	title(pollTitle),
+	initiatorName(initiatorName)
+)
+
+goal(mapCreated, pollCreated, desired(accuracy, 0.7, LowerBound))
+
+//goal(mapCreated, pollCreated, desired(reliability, 0.8), max(reliability))
+//goal(mapCreated, pollCreated, desired(response_time, 5000), min(response_time))

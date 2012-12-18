@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+	xmlns:jaxws="http://cxf.apache.org/jaxws"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+						http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://cxf.apache.org/jaxrs
+						http://cxf.apache.org/schemas/jaxrs.xsd
+						http://cxf.apache.org/jaxws
+						http://cxf.apache.org/schemas/jaxws.xsd">
+
+	<import resource="classpath:META-INF/dsol/dsol-default-config.xml" />
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+
+	<!-- <jaxws:endpoint id="dsolEndpoint" implementor="#dsol-endpoint" address="/#{dsolConfig.context}" /> -->
+	<jaxws:endpoint id="dsolEndpoint" implementor="#dsol-endpoint" address="/" />
+
+	<!-- JAX-RS -->
+	<jaxrs:server id="api" address="/api">
+		<jaxrs:serviceBeans>
+			<ref bean="dsol-index" />
+			<ref bean="dsol-application" />
+			<ref bean="dsol-instance-management" />
+			<ref bean="dsol-services-management" />			
+		</jaxrs:serviceBeans>
+		<jaxrs:providers>
+      		<ref bean="ActionsMessageBodyReader"/>
+      		<ref bean="PlannerInfoMessageBodyReader"/>
+      		<ref bean="ServiceMessageBodyReader"/>
+      		<ref bean="MethodsInfoMessageBodyReader"/>
+      		<ref bean="ServicesRelatedMessageBodyWriter"/>
+      		<ref bean="ListMessageBodyWriter"/>
+    	</jaxrs:providers>
+	</jaxrs:server>
+	
+	<!-- Providers -->
+	 <bean id="ActionsMessageBodyReader" class="org.dsol.api.util.ActionsMessageBodyReader"/>
+	 <bean id="PlannerInfoMessageBodyReader" class="org.dsol.api.util.PlannerInfoMessageBodyReader"/>
+	 <bean id="ServiceMessageBodyReader" class="org.dsol.api.util.ServiceMessageBodyReader"/>
+	 <bean id="MethodsInfoMessageBodyReader" class="org.dsol.api.util.MethodsInfoMessageBodyReader"/>
+	 <bean id="ServicesRelatedMessageBodyWriter" class="org.dsol.api.util.ServicesRelatedMessageBodyWriter"/>
+	 <bean id="ListMessageBodyWriter" class="org.dsol.api.util.ListMessageBodyWriter"/>
+
+</beans>

@@ -1,0 +1,3 @@
+action createEchoMessage(N,Message)
+pre: times(N), message(Message)
+post: message(echo_message)

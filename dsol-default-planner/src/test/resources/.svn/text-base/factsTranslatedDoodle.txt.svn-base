@@ -1,0 +1,3 @@
+start(pollId(id), language(desiredLanguage))
+
+goal(poll(translatedPoll), language(translatedPoll, desiredLanguage))

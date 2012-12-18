@@ -1,0 +1,399 @@
+package org.dsol;
+
+import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
+
+import javax.jws.WebResult;
+
+import org.dsol.api.management.util.Serializer;
+import org.dsol.config.MethodsInfo;
+import org.dsol.config.OrchestrationInterfaceInfo;
+import org.dsol.engine.ConcreteActionsFactory;
+import org.dsol.engine.DSOLClassLoader;
+import org.dsol.management.Actions;
+import org.dsol.planner.api.AbstractAction;
+import org.dsol.planner.api.Fact;
+import org.dsol.planner.api.Goal;
+import org.dsol.planner.api.PlanResult;
+import org.dsol.planner.api.Planner;
+import org.dsol.service.ServiceSelector;
+
+import com.google.gson.JsonObject;
+
+public class Instance {
+	
+	private String refId;
+	private String id;
+	private String version;
+	private long creationTime;
+	
+	private Planner planner;
+	private InstanceSession instanceSession;
+	private ConcreteActionsFactory concreteActionsFactory;
+	private boolean updated=false;
+
+	private ReentrantLock lock = new ReentrantLock();
+	private String classpathFolder;
+	private List<PlanResult> executedPlans;
+	private OrchestrationInterfaceInfo orchestrationInterfaceInfo;
+	
+	private List<Class<?>> throwExceptions;
+	
+	
+	public Instance(String refId, 
+					InstanceSession instanceSession,
+					Planner planner,
+					ServiceSelector serviceSelector,
+					List<String> classesWithActions,
+					String classpathFolder) {
+		
+		this(refId, null, null, planner, instanceSession, serviceSelector, classesWithActions, classpathFolder,null);
+	
+	}
+
+	public Instance(String refId, 
+					String id, 
+					String version, 
+					Planner planner,
+					ServiceSelector serviceSelector,
+					List<String> classesWithActions,
+					String classpathFolder,
+					OrchestrationInterfaceInfo orchestrationInterfaceInfo) {
+		
+		this(refId, id, version, planner, null,serviceSelector,classesWithActions,classpathFolder,orchestrationInterfaceInfo);
+	
+	}
+	
+	private Instance(	String refId, 
+						String id, 
+						String version, 
+						Planner planner, 
+						InstanceSession instanceSession, 
+						ServiceSelector serviceSelector,
+						List<String> classesWithActions,
+						String classpathFolder,
+						OrchestrationInterfaceInfo orchestrationInterfaceInfo) {
+		
+		
+		super();
+		this.refId = refId;
+		this.id = id;
+		this.version = version;
+		this.planner = planner;
+		this.instanceSession = instanceSession;
+		this.creationTime = new Date().getTime();
+		this.classpathFolder = classpathFolder;
+		this.executedPlans = new ArrayList<PlanResult>();
+		this.orchestrationInterfaceInfo = orchestrationInterfaceInfo;
+		
+		DSOLClassLoader dsolClassLoader = new DSOLClassLoader(DSOLClassLoader.getJars(classpathFolder), Instance.class.getClassLoader());
+		this.concreteActionsFactory = new ConcreteActionsFactory(serviceSelector, dsolClassLoader , classesWithActions, this);		
+		
+	}
+
+	public Object get(String key){
+		return get(key, false);
+	}
+	
+	public Object get(String key, boolean returnNull){
+		return instanceSession.get(key, returnNull);
+	}
+
+	public Object put(String key, Object object){
+		return instanceSession.put(key, object);
+	}
+	
+	
+	public String getId() {
+		return id;
+	}
+	
+	public InstanceSession getInstanceSession() {
+		return instanceSession;
+	}
+	
+	public Planner getPlanner() {
+		return planner;
+	}
+	
+	public String getRefId() {
+		return refId;
+	}
+	
+	public String getVersion() {
+		return version;
+	}
+	
+	public List<String> getClassesWithActions() {
+		return concreteActionsFactory.getClassesWithActions();
+	}
+	
+	public ConcreteActionsFactory getConcreteActionsFactory() {
+		return concreteActionsFactory;
+	}
+	
+	public void populate(Instance instanceToBePolulated) {
+		if(instanceSession != null){
+			instanceSession.populate(instanceToBePolulated.getInstanceSession());			
+		}
+		
+		lock.lock(); 
+		try{
+			planner.update(instanceToBePolulated.planner);
+			instanceToBePolulated.addToInitialState(this.getFinalState());
+		}
+		finally{
+			lock.unlock();
+		}
+		
+		if(orchestrationInterfaceInfo != null){
+			instanceToBePolulated.orchestrationInterfaceInfo = new OrchestrationInterfaceInfo(this.orchestrationInterfaceInfo);
+		}
+		instanceToBePolulated.version = this.version;
+	}
+
+	public void setId(String[] ids) {
+		StringBuilder resultId = new StringBuilder();
+		for(int i = 0;i< ids.length;i++){
+			if(i != 0){
+				resultId.append(",");
+			}
+			resultId.append(ids[i]);
+			resultId.append("=");
+			resultId.append(get(ids[i]));
+		}
+		this.id = resultId.toString();
+	}
+
+	public JsonObject toJSON(){
+
+		lock.lock();
+		try{
+			JsonObject instance = new JsonObject();
+			instance.addProperty("id", id);
+			instance.addProperty("ref", refId);
+			instance.addProperty("creation_time", formatCreationTime());
+			if(instanceSession != null){
+				instance.add("values", instanceSession.toJSON());			
+			}
+			instance.add("planner", Serializer.toJSON(planner));
+			instance.add("concrete_actions", concreteActionsFactory.toJSON());
+			if(!executedPlans.isEmpty()){
+				instance.add("plan_result", Serializer.toJSON(getSuccessfullExecutedPlan()));
+			}
+			if(orchestrationInterfaceInfo != null){
+				instance.add("orchestration_interface", orchestrationInterfaceInfo.toJSON());
+			}
+			return instance;
+		}
+		finally{
+			lock.unlock();
+		}
+	}
+	
+	public long getCreationTimeStamp(){
+		return creationTime;
+	}
+	
+	private String formatCreationTime(){
+		Calendar calendar = new GregorianCalendar();
+		calendar.setTimeInMillis(creationTime);
+		return new SimpleDateFormat("MM-dd-yyyy HH:mm:ss.SSS").format(calendar.getTime());
+	}
+
+	public void updateModel(Actions actions) {
+		updateModel(actions,version);
+	}
+
+	public void updateModel(Actions actions, 
+							String version) {
+		lock.lock();
+		try{
+			planner.updateActions(actions.getActions());
+			
+			if(!concreteActionsFactory.getClassesWithActions().equals(actions.getConcrete_action_classes())){
+				DSOLClassLoader dsolClassLoader = new DSOLClassLoader(DSOLClassLoader.getJars(classpathFolder), Instance.class.getClassLoader());
+				concreteActionsFactory.load(dsolClassLoader,actions.getConcrete_action_classes());				
+			}
+			this.version = version;
+			this.updated = true;
+		}
+		finally{
+			lock.unlock();
+		}
+	}
+
+	public List<PlanResult> plan() {
+		lock.lock();
+		try{
+			List<PlanResult> planResults = planner.plan();
+			//Handle multiple plans correctly
+			executedPlans.add(planResults.get(0));
+			return planResults;
+		}
+		finally{
+			lock.unlock();
+		}
+	}
+
+	public PlanResult getSuccessfullExecutedPlan(){
+		if(executedPlans.isEmpty()){
+			return null;
+		}
+		return executedPlans.get(executedPlans.size() - 1);
+	}
+	
+	public List<Fact> getFinalState(){
+		PlanResult plan = getSuccessfullExecutedPlan();
+		if(plan == null || plan.getPlan() == null){
+			return new ArrayList<Fact>();
+		}
+		return plan.getFinalState().getFacts();
+	}
+	
+	public void removeOperation(AbstractAction faultyAction) {
+		lock.lock();
+		try{
+			planner.removeOperation(faultyAction);
+		}
+		finally{
+			lock.unlock();
+		}		
+	}
+
+	public boolean tryNextGoal() {
+		lock.lock();
+		try{
+			return planner.tryNextGoal();
+		}
+		finally{
+			lock.unlock();
+		}
+	}
+	
+	public Goal getCurrentGoal(){
+		return planner.getCurrentGoal();
+	}
+
+	public void addToInitialState(List<Fact> facts) {
+		lock.lock();
+		try{
+			planner.addToInitialState(facts);
+		}
+		finally{
+			lock.unlock();
+		}
+	}
+	
+	public boolean wasUpdated(){
+		return updated;
+	}
+	
+	public void updateRead(){
+		updated = false;
+	}
+
+	public void disableAction(String action) {
+		lock.lock();
+		try{
+			planner.disableAction(action);
+		}
+		finally{
+			lock.unlock();
+		}	
+	}
+	
+	public List<ConcreteAction> getConcreteActions(AbstractAction action, List<String> params) {
+		return concreteActionsFactory.getConcreteActions(action, params);
+	}
+	
+	public List<ConcreteAction> getCompensationActions(ConcreteAction concreteAction) {
+		return concreteActionsFactory.getCompensationActions(concreteAction);
+	}
+	
+	public String getAdditionalInitialState(Method method) {
+		return orchestrationInterfaceInfo.getAdditionalInitialState(method);
+	}
+	
+	public String getGoal(Method method) {
+		return orchestrationInterfaceInfo.getGoal(method);
+	}
+
+	public Object getReturnValue(Method method) throws Throwable {
+		if (method.isAnnotationPresent(WebResult.class)) {
+			WebResult webResult = method.getAnnotation(WebResult.class);
+			InstanceSession instanceSession = getInstanceSession();
+			
+			String resultName = webResult.name();
+			Object returnObject = instanceSession.get(resultName, true); 
+			
+			if (returnObject == null){
+				returnObject = locateResult(resultName);
+			}
+			
+			return returnObject;
+		}
+
+		return null;
+	}
+	
+	private Object locateResult(String resultName){
+		List<ConcreteAction> actions = concreteActionsFactory.getConcreteActionByReturnValue(resultName);
+		
+		for(ConcreteAction action:actions){
+			try {
+				action.execute(this, new ArrayList<String>());
+				return instanceSession.get(resultName);
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}			
+		}
+		return null;
+
+	}
+
+	public void updateOrchestrationInterface(MethodsInfo methodsInfo) {
+		orchestrationInterfaceInfo.update(methodsInfo);	
+	}
+	
+	public void setThrowExceptions(List<Class<?>> throwExceptions) {
+		this.throwExceptions = throwExceptions;
+	}
+	
+	public boolean isThrownException(Class ex){
+		return this.throwExceptions != null && this.throwExceptions.contains(ex);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Instance other = (Instance) obj;
+		if (refId == null) {
+			if (other.refId != null)
+				return false;
+		} else if (!refId.equals(other.refId))
+			return false;
+		return true;
+	}
+	
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((refId == null) ? 0 : refId.hashCode());
+		return result;
+	}
+
+}

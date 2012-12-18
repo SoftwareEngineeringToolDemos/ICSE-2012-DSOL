@@ -1,0 +1,8 @@
+start(
+	searchLocation(milan),
+	searchQuery(pizza),
+	title(pollTitle),
+	initiatorName(initiatorName)
+)
+
+goal(mapCreated, pollCreated)

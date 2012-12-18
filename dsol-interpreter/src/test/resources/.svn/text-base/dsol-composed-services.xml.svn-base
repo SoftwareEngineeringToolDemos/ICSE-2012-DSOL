@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<services>
+
+	<service 	name="hi" 
+				id="hi1" 
+				type="soap"
+				wsdl="http://localhost:8086/hello?wsdl" 
+				operationNamespaceUri="http://service.dsol.org/"
+				operation="hi" />
+
+	<service 	name="compensate_hi" 
+				id="hi1" 
+				type="soap"
+				wsdl="http://localhost:8086/hello?wsdl" 
+				operationNamespaceUri="http://service.dsol.org/"
+				operation="bye"/>
+
+	<service 	name="hi" 
+				id="hi_reverse" 
+				type="soap"
+				wsdl="http://localhost:8087/helloReverse?wsdl" 
+				operationNamespaceUri="http://service.dsol.org/"
+				operation="hi" />
+
+
+</services>

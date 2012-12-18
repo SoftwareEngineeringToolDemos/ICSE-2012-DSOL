@@ -1,0 +1,90 @@
+package org.dsol.planner.api;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 
+ * Represents a plan that can be executed to accomplish a given goal.
+ * A plan is a list of ordered abstract actions.   
+ * 
+ * 	@author Leandro Sales Pinto (leandro.shp@gmail.com)
+ *	@since 0.1
+ *
+ *
+ */
+public class Plan{
+
+	//private List<AbstractAction> executedActions;
+	private List<AbstractAction> steps;
+
+	public Plan() {
+		this.steps = new ArrayList<AbstractAction>();
+	}
+	
+	public Plan(final List<AbstractAction> steps) {
+		this.steps = steps;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		Plan plan = (Plan)obj;
+		return this.getSteps().equals(plan.getSteps());
+	}
+
+	public final AbstractAction get(final int i) {
+		return steps.get(i);
+	}
+
+	public final int getActionIndex(final AbstractAction action) {
+		for (int i = 0; i < steps.size(); i++) {
+			if (steps.get(i).equals(action)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+
+	public final List<AbstractAction> getSteps() {
+		return new ArrayList<AbstractAction>(steps);
+	}
+	
+	public void addStep(AbstractAction step){
+		this.steps.add(step);
+	}
+
+	/**
+	 * Set the first <b>n</b> steps as executed.
+	 * Pay attention that <b>n</b> is not an index!
+	 * 
+	 * @param n
+	*/
+	public final void markFirstActionsAsExecuted(final int n) {
+		for (int i = 0; i < n; i++) {
+			steps.get(i).markAsExecuted();
+		}
+	}
+	 
+	
+	public final int size() {
+		return steps.size();
+	}
+	
+	@Override
+	public final String toString() {
+		StringBuilder builder = new StringBuilder();
+
+		for (AbstractAction step : steps) {
+			builder.append(step);
+        	if(step.isExecuted()){
+        		builder.append("                     <= [EXECUTED]");
+        	}
+
+			builder.append(System.getProperty("line.separator"));
+		}
+
+		return builder.toString();
+	}
+
+}

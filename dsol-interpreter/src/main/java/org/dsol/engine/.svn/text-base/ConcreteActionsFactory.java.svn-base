@@ -1,0 +1,231 @@
+package org.dsol.engine;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
+
+import org.dsol.ClassWithServiceAction;
+import org.dsol.ConcreteAction;
+import org.dsol.Instance;
+import org.dsol.InstanceSession;
+import org.dsol.InstanceSessionAware;
+import org.dsol.annotation.Action;
+import org.dsol.planner.api.AbstractAction;
+import org.dsol.service.ServiceSelector;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
+public class ConcreteActionsFactory {
+	
+	private Logger logger = Logger.getLogger(ConcreteActionsFactory.class.getName()); 
+	
+	private Map<String, List<ConcreteAction>> actions = null;
+	private Map<String, List<ConcreteAction>> compensationActions = null;
+	private final ServiceSelector serviceSelector;
+	private Instance instance;
+	private ClassLoader classLoader;
+	private List<String> classesWithActions;
+
+	protected ConcreteActionsFactory() {
+		serviceSelector = null;
+	}
+	
+	public ConcreteActionsFactory(ServiceSelector serviceSelector, ClassLoader classLoader, List<String> classesWithActions, Instance instance){
+		this.serviceSelector = serviceSelector;
+		this.instance = instance;
+		load(classLoader, classesWithActions);
+	}
+	
+	public void load(ClassLoader classLoader, List<String> classesWithActions){
+		if(classesWithActions == null){
+			classesWithActions = new ArrayList<String>();
+		}
+		this.classesWithActions = classesWithActions;
+		this.classLoader = classLoader;
+		try {
+			createMaps(this.classesWithActions);
+		} catch (Exception e) {
+			logger.severe("!!!!!!!ERROR LOADING CONCRETE ACTIONS CLASSES!!!!!!!");
+			e.printStackTrace();
+		}		
+	}
+	
+	
+	
+	protected void createMaps(List<String> classesWithActions) throws Exception{
+
+		actions = new HashMap<String, List<ConcreteAction>>();
+		compensationActions = new HashMap<String, List<ConcreteAction>>();
+
+		Map<String, List<ConcreteAction>> auxMap = null;
+		
+		List<Class> classes = loadClasses(classesWithActions); 
+		
+		for (Class classWithAction : classes) {
+			Object objectInstance = createObject(classWithAction);
+			List<Method> methods = getActionMethods(classWithAction);
+			for (Method method : methods) {
+				Action action = method.getAnnotation(Action.class);
+				String actionName = getActionName(method);
+				if(!actionName.isEmpty()){
+					auxMap = action.compensation()?compensationActions:actions; 
+
+					if(!auxMap.containsKey(actionName)){
+						auxMap.put(actionName, new ArrayList<ConcreteAction>());
+					}
+					List<ConcreteAction> methodsForAction = auxMap.get(actionName);
+					methodsForAction.add(new ConcreteAction(actionName,method,objectInstance));
+					auxMap.put(actionName, methodsForAction);	
+				}
+			}
+		}
+	}
+	
+	
+	protected String getActionName(Method method) {
+		Action action = method.getAnnotation(Action.class);
+		String actionName = action.name();
+		if(actionName.isEmpty()){
+			actionName = action.value();
+			if(actionName.isEmpty()){
+				if(!action.compensation()){
+					actionName = method.getName();	
+				}
+			}
+		}
+		/*
+		 * Compensation actions are meant to compensate the execution of an *concrete action*. For this reason,
+		 * one compensation action must be associated with the name of one method, and this name must be complete, i.e.,
+		 * include the name of the class. THe developer has the option to do not include the name of the class, but, in such
+		 * case, is a DSOL convention that the method is in the same class. The following line guarantee that behaviour.
+		 * 
+		 */
+		if(action.compensation()){
+			if(actionName.isEmpty()){
+					logger.severe("ACTION NOT INCLUDE! >>> Compensation actions must be linked to an Action through the 'name' attribute. In method ["+method+"]." );
+			}
+			else if(!actionName.contains(".")){
+				actionName = method.getDeclaringClass().getName()+"."+actionName;
+			}
+		}
+		return actionName;
+	}
+
+	//TODO: Guarantee that this order is initially the same as defined in the class
+	protected List<Method> getActionMethods(Class _class){
+		List<Method> methods = new ArrayList<Method>();
+		for (Method method : _class.getMethods()) {
+			if (method.isAnnotationPresent(Action.class)) {
+				methods.add(method);
+			}
+		}
+		return methods;
+	}
+		
+	public List<String> getClassesWithActions() {
+		return classesWithActions;
+	}
+	
+	/**
+	 * Return all the valid methods to execute this step of the plan
+	 * @param stepToCompensate
+	 * @return
+	 */	
+	public List<ConcreteAction> getCompensationActions(ConcreteAction executedConcreteAction){
+
+		String methodName = executedConcreteAction.getMethodNameIncludingDeclaringClass();
+		List<ConcreteAction> compensationActions = this.compensationActions.get(methodName);
+		if(compensationActions == null){
+			return new ArrayList<ConcreteAction>();
+		}
+		return filter(compensationActions, null);
+	}
+	
+	
+	public List<ConcreteAction> getConcreteActions(AbstractAction stepOfThePlan, List<String> params){
+		String actionName = stepOfThePlan.getName();
+		List<ConcreteAction> concreteActions = null;
+
+		concreteActions = actions.get(actionName);
+		if(concreteActions == null){
+			return new ArrayList<ConcreteAction>();
+		}
+		return filter(concreteActions, params);
+	}
+	
+	protected List<ConcreteAction> filter(List<ConcreteAction> concreteActions, List<String> params){
+		List<ConcreteAction> validConcreteActions = new ArrayList<ConcreteAction>();
+		InstanceSession instanceSessionCopy = instance.getInstanceSession().copy();
+		for(ConcreteAction concreteAction:concreteActions){
+			if(concreteAction.holdWhenExpression(instanceSessionCopy,params)){
+				validConcreteActions.add(concreteAction);
+			}
+		}
+		return validConcreteActions;
+	}
+
+	public JsonObject toJSON() {
+		Gson gson = new Gson();
+		JsonObject jsonConcreteActionsFactory = new JsonObject();
+		
+		jsonConcreteActionsFactory.add("classes", gson.toJsonTree(classesWithActions));
+		
+		Set<String> actionsNames = this.actions.keySet();
+		JsonObject jsonActions = new JsonObject();
+		for(Iterator<String> it = actionsNames.iterator();it.hasNext();){
+			String actionName = it.next();
+			List<ConcreteAction> actions = this.actions.get(actionName);
+			List<String> methodsNames = new ArrayList<String>();
+			for(ConcreteAction concreteAction:actions){
+				methodsNames.add(concreteAction.getMethodNameIncludingDeclaringClass());
+			}
+			jsonActions.add(actionName, gson.toJsonTree(methodsNames));
+		}
+		jsonConcreteActionsFactory.add("actions", jsonActions);
+		return jsonConcreteActionsFactory;
+	}	
+	
+	/*************************** AUXILIAR METHODS *************************************/
+	private List<Class> loadClasses(List<String> classesNames) {
+		List<Class> classes = new ArrayList<Class>();
+		for(String className:classesNames){
+			try {
+				classes.add(classLoader.loadClass(className));
+			} catch (ClassNotFoundException e) {
+				logger.severe("Impossible to load "+className);
+			}
+		}
+		return classes;
+	}
+
+	private Object createObject(Class _class) throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+		Object object = null;
+		if(_class.isInterface() || Modifier.isAbstract(_class.getModifiers())){
+			object = ClassWithServiceAction.newInstance(_class,serviceSelector, instance);
+		}
+		else{
+			Constructor constructor = _class.getConstructor();
+			object = constructor.newInstance();		
+		}
+		
+		if(InstanceSessionAware.class.isAssignableFrom(object.getClass())){
+			InstanceSessionAware instanceSessionAware = (InstanceSessionAware)object;
+			if(instance.getInstanceSession() != null){
+				instanceSessionAware.setInstanceSession(instance.getInstanceSession());	
+			}
+		}
+
+		return object;
+	}
+
+
+}

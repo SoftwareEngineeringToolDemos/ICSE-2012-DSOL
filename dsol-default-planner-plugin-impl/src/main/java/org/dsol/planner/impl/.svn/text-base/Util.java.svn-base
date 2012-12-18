@@ -1,0 +1,25 @@
+package org.dsol.planner.impl;
+
+import graphplan.domain.Proposition;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.dsol.planner.api.Fact;
+
+public class Util {
+
+	public static List<Fact> getPropositionsAsFacts(List<Proposition> propositions){
+		List<Fact> propositionsAsFacts = new ArrayList<Fact>();
+		for(Proposition proposition:propositions){
+			if(proposition.getTerms().isEmpty()){
+				propositionsAsFacts.add(new Fact(proposition.getFunctor()));	
+			}
+			else{
+				propositionsAsFacts.add(new Fact(proposition.getSignature()));
+			}
+			
+		}
+		return propositionsAsFacts;
+	}	
+}

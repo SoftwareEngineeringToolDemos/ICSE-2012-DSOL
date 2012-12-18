@@ -1,0 +1,13 @@
+action test
+pre: a
+post: b
+
+action testRel
+pre: b
+post: c
+qos: {response_time:1000, reliability:0.5, qos1:1.3}
+
+action testDisabled
+pre: b
+post: d
+enabled: false

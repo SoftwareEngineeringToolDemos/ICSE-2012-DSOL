@@ -1,0 +1,60 @@
+//Weather Services
+action getWeatherForecast(Location)
+pre: searchLocation(Location)
+post: forecast(forecast_info, Location)
+
+//Geocoding
+action getCoordinate(Location)
+pre: searchLocation(Location)
+post: searchCoordinate(coordinate)
+
+//Places Services
+action searchRestaurants(Coordinate)
+pre: searchCoordinate(Coordinate)
+post: list_of_places(restaurants)
+
+//Places Services
+action searchRestaurants(Location)
+pre: searchLocation(Location)
+post: list_of_places(restaurants)
+
+//Map Services
+action getMap(Places)
+pre: list_of_places(Places)
+post: mapWithMarkers(Places)
+
+//Recommendation Services
+action getReviews(Places)
+pre: list_of_places(Places)
+post: reviewsIncluded(Places)
+
+//Movie
+action getMovieByCategory(Genre)
+pre: selectedGenre(Genre)
+post: list_of_movies(suggestedMovies)
+
+action getMoviesIds(Movies)
+pre: list_of_movies(Movies)
+post: list_of_movies_ids(movieIds)
+
+action getMoviesReviews(MovieIds, Movies)
+pre: list_of_movies_ids(MovieIds), list_of_movies(Movies)
+post: moviesReviewsAdded(Movies)
+
+//Theater
+action searchTheater(Movie, Venue)
+pre: movie(Movie), venue(Venue)
+post: theater(selectedTheater)
+
+action getDirections(Venue, Theater)
+pre: venue(Venue), theater(Theater)
+post: directions(Venue, Theater)
+
+action sendText(Participants, Venue, Theater, Movie)
+pre: participants(Participants), venue(Venue), theater(Theater), movie(Movie)
+post: invitationSent(Participants)
+
+//Seam
+seam action selectMovieAndVenue(Movies, Places)
+pre: moviesReviewsAdded(Movies), reviewsIncluded(Places)
+post: movie(selectedMovie), venue(selectedVenue)

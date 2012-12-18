@@ -1,0 +1,33 @@
+action getCoordinate(Location)
+pre: searchLocation(Location)
+post: searchCoordinate(coordinate)
+qos: {reliability: 1, response_time: 2000}
+
+action findAvailablePlacesByLocation(Location, Query)
+pre: searchLocation(Location), searchQuery(Query)
+post: listofplaces(availablePlaces)
+qos: {reliability: 1, response_time: 2000, accuracy:0.6}
+
+action findAvailablePlacesByCoordinate(Coordinate,Query)
+pre: searchCoordinate(Coordinate), searchQuery(Query)
+post: listofplaces(availablePlaces)
+qos: {reliability: 1, response_time: 2000, accuracy: 1}
+
+action createMapUsingGoogle(Places)
+pre: listofplaces(Places)
+post: map(mapWithMarkedPlaces), mapCreated
+qos: {reliability: 1, response_time: 1000}
+
+action createMapUsingBing(Places)
+pre: listofplaces(Places)
+post: map(mapWithMarkedPlaces), mapCreated
+qos: {reliability: 1, response_time: 1500}
+
+action createOptions(Places)
+pre: listofplaces(Places)
+post: listofoptions(options)
+
+action createPoll(Options,PollTitle)
+pre: title(PollTitle), listofoptions(Options)
+post: pollCreated
+qos: {reliability: 1, response_time: 1000}

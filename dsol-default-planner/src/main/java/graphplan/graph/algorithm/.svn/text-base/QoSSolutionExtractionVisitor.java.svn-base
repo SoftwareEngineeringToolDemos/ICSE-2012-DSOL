@@ -1,0 +1,197 @@
+/*
+ * ---------------------------------------------------------------------------
+ * Copyright (C) 2010  Felipe Meneguzzi
+ * JavaGP is distributed under LGPL. See file LGPL.txt in this directory.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ * To contact the author:
+ * http://www.meneguzzi.eu/felipe/contact.html
+ * ---------------------------------------------------------------------------
+ */
+package graphplan.graph.algorithm;
+
+import graphplan.PlanResult;
+import graphplan.domain.DomainDescription;
+import graphplan.domain.Operator;
+import graphplan.domain.Proposition;
+import graphplan.graph.ActionLevel;
+import graphplan.graph.GraphElement;
+import graphplan.graph.GraphLevel;
+import graphplan.graph.PlanningGraph;
+import graphplan.graph.PropositionLevel;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.logging.Logger;
+
+/**
+ * A visitor class that implements the Graphplan solution extraction
+ * algorithm.
+ * 
+ * TODO implement solution extraction using this pattern
+ * @author Felipe Meneguzzi
+ *
+ */
+public class QoSSolutionExtractionVisitor extends SolutionExtractionVisitor {
+	
+	@SuppressWarnings("unused")
+	private static final Logger logger = Logger.getLogger(QoSSolutionExtractionVisitor.class.getName());
+	
+	protected DomainDescription domainDescription;
+	
+
+	List<PlanResult> possiblePlans = new ArrayList<PlanResult>();
+	
+	public QoSSolutionExtractionVisitor(List<Proposition> goals) {
+		super(goals);
+	}
+	
+	public QoSSolutionExtractionVisitor(DomainDescription domainDescription) {
+		super(domainDescription);	
+		this.domainDescription = domainDescription;
+	}
+	
+	public boolean visitElement(GraphElement element) {
+		if(element instanceof PlanningGraph) {
+			PlanningGraph planningGraph = (PlanningGraph) element;
+			
+			if(planningGraph.getLastGraphLevel().isPropositionLevel()) {
+				subGoalStack.clear();
+				supportActionStack.clear();
+				subGoalStack.push(new TreeSet<Proposition>(goals));
+				possiblePlans.clear();
+				
+				if(planningGraph.getLastGraphLevel().accept(this)) {
+					planResult = getPlan();
+				} else {
+					planResult = new PlanResult(false);
+				}
+				
+				//logger.info("Table size is: "+noGoodTableSize());
+				//logger.info("Hits         : "+hits);
+				//logger.info("Misses       : "+misses);
+				
+				return planResult.isTrue();
+			} else {
+				return false;
+			}
+		}
+		return false;
+	}
+	
+	//TODO: REWRITE THIS!
+	private PlanResult getPlan(){
+		PlanResult planResult = null;;
+
+		if(domainDescription.mustGuaranteeBestPlan()){
+			planResult = possiblePlans.get(0);
+			
+			for(int i =1;i<possiblePlans.size();i++){
+				if(domainDescription.comparePlans(possiblePlans.get(i), planResult)){
+					planResult = possiblePlans.get(i);
+				}
+			}
+		}
+		else{
+			planResult = possiblePlans.get(0);
+		}
+				
+		return planResult;
+
+	}
+		
+	public boolean visitGraphLevel(GraphLevel graphLevel) {
+		if(graphLevel.isActionLevel()) {
+			//For every action level we visit, we add a list
+			//of actions to the support action stack to be
+			//used in the iteration of the proposition level
+			boolean planFound = graphLevel.getPrevLevel().accept(this);
+			return planFound;
+		} else {
+			if(graphLevel.getPrevLevel() == null) {
+				//We hit the first level, check QoS
+				PlanResult result = new PlanResult(this.supportActionStack);
+				if(domainDescription.satifiesQoS(result)){
+					possiblePlans.add(result);
+					return true;
+				}
+				return false;				
+			}
+			PropositionLevel propositionLevel = (PropositionLevel) graphLevel;
+			Set<Proposition> subGoals = new TreeSet<Proposition>(subGoalStack.peek());
+					
+			//Then check if the goals are conceptually possible
+			//If the goals are possible in this level
+			if(propositionLevel.goalsPossible(subGoals)){
+				//Then push a set of potential actions for them
+				//And try to fill this up with operators
+				//supportActionStack.push(new LinkedHashSet<Operator>());
+				//logger.fine("At level "+propositionLevel.getIndex()+", trying to achieve "+subGoalStack.peek());
+				
+				boolean planFound = this.visitPropositionLevel(propositionLevel, subGoals);
+				/*if(!planFound) {
+					this.supportActionStack.pop();
+				}*/
+				return planFound;
+			} else {
+				//When memoization is in, check this
+				return false;
+			}
+		}
+
+		//return false;
+	}
+
+	
+	protected boolean visitPropositionLevel(PropositionLevel propositionLevel, 
+										    Set<Proposition> subGoals) {
+		//If we have reached the first proposition level
+		//We have found a plan
+		//TODO check this for redundancy
+		if(propositionLevel.getPrevLevel() == null) {
+			return true;
+		}
+		
+		final ActionLevel actionLevel = (ActionLevel) propositionLevel.getPrevLevel();
+
+		//For each possible set of actions
+		for(ActionSetIterator iterator = new ActionSetIterator(subGoals, actionLevel);
+			iterator.hasNext(); ) {
+			Set<Operator> selectedOperators = iterator.next();
+			if(selectedOperators != null) {
+
+				supportActionStack.push(selectedOperators);
+				Set<Proposition> newSubGoals = determineSubgoals(selectedOperators);
+				this.subGoalStack.push(newSubGoals);
+				
+				boolean planFound = propositionLevel.getPrevLevel().accept(this);
+				
+				if(planFound) {			
+					if(!domainDescription.mustGuaranteeBestPlan()){
+						//THIS MEANS THAT NO QoS was defined
+						return true;
+					}
+				}
+				
+				this.subGoalStack.pop();
+				this.supportActionStack.pop();
+			}
+		}
+		return !possiblePlans.isEmpty();
+	}		
+}

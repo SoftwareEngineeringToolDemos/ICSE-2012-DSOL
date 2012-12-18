@@ -1,0 +1,11 @@
+action s1
+pre: a
+post: b
+
+action s2
+pre: b
+post: c
+
+action s3
+pre: b
+post: c

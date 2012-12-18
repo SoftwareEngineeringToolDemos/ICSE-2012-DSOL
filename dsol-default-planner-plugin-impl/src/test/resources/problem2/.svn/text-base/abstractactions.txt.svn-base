@@ -1,0 +1,23 @@
+action getHour
+pre: true
+post: hourFetched(ok)
+
+action defineGreetingInPortuguese
+pre: hourFetched(ok),language(portuguese)
+post: greetingWord(greetingInPortuguese)
+
+action defineGreetingInItalian
+pre: language(italian)
+post: greetingWord(greetingInItalian)
+
+action defineGreetingInEnglish
+pre: language(english)
+post: greetingWord(greetingInEnglish)
+
+action sendGreeting(Word,Name)
+pre: name(Name),greetingWord(Word)
+post: greetingSent(Name)
+
+seam action defineDefaultGreeting
+pre: language(empty)
+post: language(portuguese),language(zenglish)

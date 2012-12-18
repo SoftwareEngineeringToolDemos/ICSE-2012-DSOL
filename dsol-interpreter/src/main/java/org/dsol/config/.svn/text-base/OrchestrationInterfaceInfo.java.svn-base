@@ -1,0 +1,167 @@
+package org.dsol.config;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
+
+import javax.jws.WebMethod;
+
+import org.apache.cxf.helpers.IOUtils;
+import org.dsol.util.Util;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
+public class OrchestrationInterfaceInfo {
+
+	private Logger logger = Logger.getLogger(OrchestrationInterfaceInfo.class.getName());
+	
+	private Class orchestrationInterface;
+	private List<MethodInfo> methodsInfo;
+	
+	public OrchestrationInterfaceInfo(DSOLConfig dsolConfig) throws IOException{
+		
+		this.orchestrationInterface = dsolConfig.getOrchestrationInterface();
+
+		Method[] methods = orchestrationInterface.getMethods();
+		methodsInfo = new ArrayList<MethodInfo>();
+
+		for(Method method:methods){
+			if(Modifier.isPublic(method.getModifiers())){
+				if(method.isAnnotationPresent(WebMethod.class)){
+					WebMethod webResultAnnotation = method.getAnnotation(WebMethod.class);
+					if(webResultAnnotation.exclude()){
+						continue;
+					}
+				}
+				MethodInfo methodInfo = new MethodInfo(method,readInitialState(method, dsolConfig),readGoal(method, dsolConfig));
+				methodsInfo.add(methodInfo);
+			}
+		}
+	}
+	
+	
+	
+	public OrchestrationInterfaceInfo(OrchestrationInterfaceInfo orchestrationInterfaceInfo) {
+		super();
+		this.orchestrationInterface = orchestrationInterfaceInfo.orchestrationInterface;
+		this.methodsInfo = new ArrayList<MethodInfo>();
+		for(MethodInfo methodInfo:orchestrationInterfaceInfo.methodsInfo){
+			MethodInfo newMethodInfo = new MethodInfo(methodInfo.getMethod(), methodInfo.getInitialState(), methodInfo.getGoal());
+			this.methodsInfo.add(newMethodInfo);
+		}
+	}
+
+
+
+	private String readInitialState(Method method, DSOLConfig dsolConfig) throws IOException{
+		String methodName = method.getName();
+
+		String initialStateFile = dsolConfig.getProperty(methodName+".initial_state");
+		
+		if(initialStateFile.isEmpty()){
+			initialStateFile = "classpath:"+methodName+".initial_state.dsol";
+		}
+		
+		InputStream initialStateStream = Util.getInputStream(initialStateFile);
+		if(initialStateStream != null){
+			String initialState = IOUtils.readStringFromStream(initialStateStream);
+			return initialState;
+		}
+		return null;
+	}
+	
+	private String readGoal(Method method, DSOLConfig dsolConfig) throws IOException{
+
+		String methodName = method.getName();
+		String goalFile = dsolConfig.getProperty(methodName + ".goal");
+		if (goalFile.isEmpty()) {
+			goalFile = "classpath:" + methodName + ".goal.dsol";
+		}
+
+		InputStream goalStream = Util.getInputStream(goalFile);
+		if (goalStream == null) {
+			return null;
+		}
+
+		return IOUtils.readStringFromStream(goalStream);
+	}
+	
+	public Class getOrchestrationInterface() {
+		return orchestrationInterface;
+	}
+
+	public List<MethodInfo> getMethods() {		
+		return methodsInfo;
+	}
+
+	public String getAdditionalInitialState(Method method) {
+		return findByMethod(method).getInitialState();
+	}
+
+	public String getGoal(Method method) {
+		return findByMethod(method).getGoal();
+	}
+	
+	@SuppressWarnings(value={ "unchecked", "rawtypes" })
+	public MethodInfo findByMethod(Method method){
+		//find by method
+		int index =  Collections.binarySearch(this.methodsInfo,method, new Comparator() {
+						@Override
+						public int compare(Object methodInfo, Object method) {
+							if(((MethodInfo)methodInfo).getMethod().equals(method)){
+								return 0;
+							}
+							return -1;
+						}
+					});
+		
+		return this.methodsInfo.get(index);
+	}
+	
+	public JsonObject toJSON(){
+		JsonObject orchestrationInterface = new JsonObject();
+		orchestrationInterface.addProperty("name", this.orchestrationInterface.getName());
+		JsonArray methods = new JsonArray();
+		for(MethodInfo methodInfo:methodsInfo){
+			methods.add(methodInfo.toJSON());
+		}
+		orchestrationInterface.add("methods", methods);
+		return orchestrationInterface;
+	}
+
+
+
+	public void update(MethodsInfo methodsInfo) {
+		
+		for(Iterator<MethodInfo> it = methodsInfo.getMethodsInfo().iterator();it.hasNext();){
+			MethodInfo methodInfo = it.next();
+			
+			//find by name
+			int index =  Collections.binarySearch(this.methodsInfo,methodInfo, new Comparator<MethodInfo>() {
+							@Override
+							public int compare(MethodInfo methodInfo1, MethodInfo methodInfo2) {
+								if(methodInfo1.getName().equals(methodInfo2.getName())){
+									return 0;
+								}
+								return -1;
+							}
+						});
+			
+			MethodInfo actualMethodInfo = this.methodsInfo.get(index);
+			actualMethodInfo.setInitialState(methodInfo.getInitialState());
+			actualMethodInfo.setGoal(methodInfo.getGoal());
+		}
+		
+	}
+	
+}

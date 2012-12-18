@@ -1,0 +1,165 @@
+<html>
+<head>
+<title>.:: DSOL Monitoring ::.</title>
+
+
+
+<link type="text/css" href="app/res/css/ui-lightness/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+<link type="text/css" href="app/res/css/general.css" rel="stylesheet" />
+
+<style>
+	.chart{
+		width: 200px;
+		text-align: center;
+		float: left;
+	}
+	.action{
+		font-weight: bold;
+	}
+</style>
+
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>	
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.6.4.js"></script>
+<script type="text/javascript" src="app/res/js/jquery.json-2.2.min.js"></script>
+<script type="text/javascript" src="app/res/js/jquery-ui-1.8.16.custom.min.js"></script>
+
+<script type="text/javascript">
+	var updateTime = 1000;
+	var delta = 0;
+
+	google.load('visualization', '1', {packages:['gauge']});
+	var states = {};
+
+	$(document).ready(function(){
+		$.get('actions', function(actions) {
+			for(i = 0; i< actions.length;i++){
+				var state = {"N":0,"success":0, "a":0, "r":actions[i]["reliability"],"r0":actions[i]["reliability"]};
+				var actionName = actions[i]["action"];
+				states[actionName] = state;
+				drawVisualization(actionName,actions[i]["reliability"]);
+			}
+			setTimeout("monitor()",updateTime);
+				
+		},"json");
+	});
+	
+	function update(action,N,Ns){
+		var state = states[action];
+		if(N != states[action]["N"]){
+			var currentA = state["a"];
+			var currentR = state["r"];
+			var r0 = state["r0"];
+			var newA = currentA + N;
+			var newR = (currentA/newA)*currentR + Ns/newA;
+			newR = roundNumber(newR);
+			var newState = {"N":N,"success":Ns, "a":newA, "r":newR,"r0":r0};
+			var oldState = states[action]; 
+			states[action] = newState;
+			update_chart(action,newR,oldState);
+/* 			if(newR < r0){
+				var diff = r0 - newR;
+				if(diff > delta){
+					disableAction(action);
+				}
+			} */
+		}
+	}
+	
+	function roundNumber(num){
+		var dec = 4;
+		var result = Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
+		return result;
+	}
+	
+
+	function update_chart(actionName,reliability,oldState) {
+		
+		var data = oldState["chart_data"];
+		data.setValue(0, 1, reliability);
+		var options = oldState["chart_options"];
+		var chartObj = oldState["chart"];
+		
+		states[actionName]["chart"] = chartObj;
+		states[actionName]["chart_data"] = data;
+		states[actionName]["chart_options"] = options;
+		
+		chartObj.draw(data, options);
+	}
+
+	function monitor() {
+		$.get('actions', function(actions) {
+			for (i = 0; i < actions.length; i++) {
+				var success = actions[i]["success"];
+				var fail = actions[i]["fail"];
+				var total = success + fail;
+				update(actions[i]["action"], total, success);
+			}
+			//alert($.toJSON(states));
+			setTimeout("monitor()", updateTime);
+		}, "json");
+	}
+
+	function drawVisualization(actionName, reliability) {
+		// Create and populate the data table.
+		var data = new google.visualization.DataTable();
+		data.addColumn('string', 'Label');
+		data.addColumn('number', 'Value');
+		data.addRows(1);
+		data.setValue(0, 0, '');
+		data.setValue(0, 1, reliability);
+
+/* 		var redToValue = reliability > 0 ?reliability - delta:0;
+		var yellowFromValue = reliability > 0 ?reliability - delta:0;
+		var yellowToValue = reliability > 0 ?reliability:0;
+ */		
+		var options = {
+			min : 0,
+			max : 1,
+/* 			redFrom : 0,
+			redTo : redToValue,
+			yellowFrom: yellowFromValue,
+			yellowTo: yellowToValue,
+			greenFrom : reliability,
+			greenTo : 1,
+ */			minorTicks : 5,
+			majorTicks : [ "0", "0.5", "1" ],
+			width : 500,
+			height : 200
+		};
+
+		var divName = "visualization_" + actionName;
+
+		$("#div_charts").append("<div class= \"chart\" id=\"container_"+divName+"\"><div id=\""+divName+"\"></div><div class=\"action\" id=\"name_"+divName+"\"></div></div>");
+
+		$("#name_"+divName).html(actionName);
+		
+		var chartObj = new google.visualization.Gauge(document
+				.getElementById(divName));
+		states[actionName]["chart"] = chartObj;
+		states[actionName]["chart_data"] = data;
+		states[actionName]["chart_options"] = options;
+
+		// Create and draw the visualization.
+		chartObj.draw(data, options);
+	}
+	
+	
+	function disableAction(action){
+		var urlVal = "../management/actions/"+action;
+		$.ajax({
+			  url: urlVal,
+			  type:'DELETE'
+			});
+	}
+</script>
+
+</head>
+
+<body>
+
+	<div id="welcome"><h1>Welcome to the DSOL Monitoring Interface</h1></div>
+	<div id="div_charts"></div>
+	
+</body>
+
+</html>

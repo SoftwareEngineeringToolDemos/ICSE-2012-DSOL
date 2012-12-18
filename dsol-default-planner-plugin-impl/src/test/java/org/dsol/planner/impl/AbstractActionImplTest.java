@@ -1,0 +1,75 @@
+package org.dsol.planner.impl;
+
+import graphplan.domain.Operator;
+import graphplan.parser.ParseException;
+import graphplan.parser.PlannerParser;
+
+import java.io.ByteArrayInputStream;
+import java.util.Arrays;
+
+import junit.framework.Assert;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+
+public class AbstractActionImplTest {
+	
+	static Operator operator = null;
+
+	@BeforeClass
+	public static void setUp() throws ParseException{
+		PlannerParser parser = new PlannerParser();
+		
+		StringBuilder builder = new StringBuilder();
+		builder.append("action test(Param1,Param2)");
+		builder.append("pre:precond(Param1)");
+		builder.append(System.getProperty("line.separator"));
+		builder.append("post: postcond(Param2)");
+		builder.append(System.getProperty("line.separator"));
+		
+		operator = parser.parseOperators(new ByteArrayInputStream(builder.toString().getBytes())).get(0);
+	}
+	
+	
+	@Test
+	public void getOperator(){		
+		
+		AbstractActionImpl action = new AbstractActionImpl(operator);
+
+		Assert.assertNotNull(action.getOperator());
+		Assert.assertEquals(operator, action.getOperator());
+	}
+	
+	@Test
+	public void getName(){
+		AbstractActionImpl action= new AbstractActionImpl(operator);
+
+		Assert.assertEquals("test", action.getName());
+	}
+	
+	@Test
+	public void getParamList(){		
+		
+		AbstractActionImpl action= new AbstractActionImpl(operator);
+
+		Assert.assertEquals(2,action.getParamList().size());
+		Assert.assertEquals(Arrays.asList("Param1","Param2"), action.getParamList());
+	}
+	
+	@Test
+	public void toStringT(){
+		AbstractActionImpl action= new AbstractActionImpl(operator);
+		Assert.assertEquals("test(Param1,Param2)", action.toString());
+	}
+	
+	@Test
+	public void equalsT(){
+		AbstractActionImpl action= new AbstractActionImpl(operator);
+		AbstractActionImpl action2= new AbstractActionImpl(operator);
+		
+		Assert.assertEquals(action, action2);
+	}
+	
+
+}

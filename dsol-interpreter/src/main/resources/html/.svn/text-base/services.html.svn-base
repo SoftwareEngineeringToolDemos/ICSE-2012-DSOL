@@ -1,0 +1,340 @@
+<html>
+<head>
+<title>.:: DSOL Management - Instances ::.</title>
+
+<link type="text/css" href="res/css/ui-lightness/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+<link type="text/css" href="res/css/general.css" rel="stylesheet" />
+	
+<script type="text/javascript" src="res/js/jquery-1.6.4.js"></script>
+<script type="text/javascript" src="res/js/jquery.json-2.2.min.js"></script>
+<script type="text/javascript" src="res/js/jquery-ui-1.8.16.custom.min.js"></script>
+<script type="text/javascript" src="res/js/general.js"></script>
+
+<script type="text/javascript">
+
+	var services;
+	var reload = false;
+
+	$(document).ready(function(){
+	
+		
+			$("#soap,#rest").button();
+			$("#soap_service").dialog({autoOpen:false,modal:true,width:275,"buttons":
+				{ "OK": function() {
+						saveSoapService();
+					}
+				}
+			});
+			
+			$("#rest_service").dialog({autoOpen:false,modal:true,width:275,"buttons":
+				{ "OK": function() {
+					saveRestService();
+				}}});
+			
+			$("#messages").dialog({
+				width:350,
+				autoOpen : false,
+				modal : true,
+				close : function() {
+					if (reload) {
+						reload = false;
+						window.location.reload();
+					}
+				},
+				buttons: { "OK": function() {
+					$( this ).dialog( "close" );
+				}}
+			});
+			
+			$("#soap").click(function(){
+				$("#soap_service").dialog("open");
+			});
+			
+			$("#rest").click(function(){
+				$("#rest_service").dialog("open");
+			});
+			
+			//Home link action
+			$("#home").click(function() {
+				var parts = location.pathname.split("/");
+				window.location="/"+parts[1]+"/"+parts[2];
+			});
+						
+			$.get('../services', function(data) {
+				services = data["services_list"];
+				fillChecksDiv();
+				showServices(0);
+			},"json");
+		}
+	);
+	
+	function fillChecksDiv(){
+		if(services.length > 0){
+			var checks = '<input type="radio" name="services" id="radio0" checked="checked" onclick="showServices(0)"/><label for="radio0">'+services[0]["services_name"]+'</label>';
+			
+			for(var i=1;i<services.length;i++){
+				checks += '<input type="radio" name="services" id="radio'+i+'"onclick="showServices('+i+')"/><label for="radio'+i+'">'+services[i]["services_name"]+'</label>';
+			}
+			$("#checks").html(checks);	
+			
+		}
+	}
+	
+	function createMessageItem(message){
+		return '<span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 3px 0;"></span>'+message+'<br style="clear:both;"/>'
+	}
+	
+	function saveSoapService(){
+		var idValue = $("#id").val();
+		var nameValue = $("#name").val();
+		var wsdlValue = $("#wsdl").val();
+		var operationValue = $("#operation").val();
+		var uriValue = $("#uri").val();
+		
+		var message = "";
+
+		if(jQuery.trim(nameValue).length == 0){
+			message = createMessageItem('Please, inform the service name.');
+		}
+		if(jQuery.trim(idValue).length == 0){
+			message += createMessageItem('Please, inform the service id.');
+		}
+		if(jQuery.trim(wsdlValue).length == 0){
+			message += createMessageItem('Please, inform the service wsdl address.');
+		}
+		if(jQuery.trim(uriValue).length == 0){
+			message += createMessageItem('Please, inform the operation namespace URI.');
+		}
+		if(jQuery.trim(operationValue).length == 0){
+			message += createMessageItem('Please, inform the operation name.');
+		}
+		
+		if(message.length > 0){
+			show_message('Attention',message);
+			return;
+		}
+		
+		saveService(nameValue, {"id":idValue,"name":nameValue,"type":"soap","wsdl":wsdlValue,"operation":operationValue,"operation_namespace_uri":uriValue});
+		
+	}
+	
+	function saveRestService(){
+	
+		var idValue = $("#id_rest").val();
+		var nameValue = $("#name_rest").val();
+		var urlValue = $("#url").val();
+		var methodValue = $("#method").val();
+		var mediaTypeValue = $("#mediaType").val();
+		var requestHeadersValue = $("#requestHeaders").val();
+		var responseHeadersValue = $("#responseHeaders").val();
+		
+		var message = "";
+
+		if(jQuery.trim(nameValue).length == 0){
+			message = createMessageItem('Please, inform the service name.');
+		}
+		if(jQuery.trim(idValue).length == 0){
+			message += createMessageItem('Please, inform the service id.');
+		}
+		if(jQuery.trim(urlValue).length == 0){
+			message += createMessageItem('Please, inform the service url.');
+		}
+		if(jQuery.trim(methodValue).length == 0){
+			message += createMessageItem('Please, inform the HTTP method to be used.');
+		}
+		else if(methodValue != 'DELETE' ){
+			if(jQuery.trim(mediaTypeValue).length == 0){
+				message += createMessageItem('Please, inform the media type used to send/receive data.');
+			}	
+		}
+
+		if(message.length > 0){
+			show_message('Attention',message);
+			return;
+		}
+		
+		saveService(nameValue, {"id":idValue,"name":nameValue,"type":"rest","url":urlValue,"method":methodValue,"request_headers":requestHeadersValue,"response_headers":responseHeadersValue});
+		
+	}
+	
+	function saveService(nameValue, data){
+		var encoded = $.toJSON(data);
+ 		$.ajax({
+			  url: '../services/'+nameValue+'/',
+			  type: "POST",
+			  contentType: "application/json",
+			  data: encoded,
+			  success: function() {
+				  reload = true;
+				  show_message('Success','<span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Service saved successfully.');
+				  $( this ).dialog( "close" );
+			 },
+			 statusCode: {
+				    409: function() {
+				    	show_message('Error','<span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 50px 0;"></span>A service with the same <b>id</b> already exists. Choose another one.');
+				    }
+				  }
+			});
+
+	}
+	
+	function showServices(index){
+		$("#accordion_cont").html("");
+		var accordion_info = '<div id="accordion">';
+		var services_info = services[index]["services"];
+		if(!services_info.length){
+			return;
+		}
+		for(var i=0;i<services_info.length;i++){
+			accordion_info += '<h3><a href="#">'+services_info[i]["id"]+'</a></h3>'+formatService(services_info[i]);
+		}
+		
+		accordion_info += '</div>';
+		$("#accordion_cont").html(accordion_info);
+		$("#accordion").accordion();
+		
+		for(var i=0; i<services_info.length; i++){
+			
+			var serviceName = services_info[i]["name"];
+			var id = services_info[i]["id"];
+
+			$("#delete_"+id).button();
+			$("#delete_"+id).click(
+				function(){
+					var urlVal = "../services/"+serviceName+"/"+id;
+					$.ajax({
+						  url: urlVal,
+						  type:'DELETE',
+						  success: function() {
+							  show_message('Success','<span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Service deleted successfully.');
+							  reload = true;
+						  },
+						  error: function() {
+							  show_message('Error','<span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 50px 0;"></span>Error deleting service.');
+							  reload = true;
+						  }
+					});
+					
+				}
+			);
+		}
+	}
+	
+	function formatService(service){
+		var serviceDiv = '<div>';
+		serviceDiv += '<span class="title">Name: </span> ';
+		serviceDiv += service["name"];
+		serviceDiv += '<br/>';
+		serviceDiv += '<span class="title">Id: </span>';
+		serviceDiv += service["id"];
+		serviceDiv += '<br/>';
+		serviceDiv += '<span class="title">Type: </span>';
+		var type = service["type"]
+		serviceDiv += type;
+		serviceDiv += '<br/>';
+		
+		
+		if(type == "soap"){
+			serviceDiv += '<span class="title">Wsdl address: </span>';
+			serviceDiv += service["wsdl"];
+			serviceDiv += '<br/>';
+			serviceDiv += '<span class="title">Operation: </span>';
+			serviceDiv += '{'+service["operation_namespace_uri"]+'}/'+service["operation"]+'';
+		}
+		else if (type== "rest"){
+			serviceDiv += '<span class="title">URL: </span>';
+			serviceDiv += service["url"];
+			serviceDiv += '<br/>';
+			serviceDiv += '<span class="title">Method: </span>';
+			serviceDiv += service["method"];
+			var mediaType = service["media_type"]
+			if(mediaType){
+				serviceDiv += '<br/>';
+				serviceDiv += '<span class="title">Media Type: </span>';
+				serviceDiv += mediaType;
+			}
+		}
+		var requestHeaders = service["request_headers"]
+		if(requestHeaders){
+			serviceDiv += '<br/>';
+			serviceDiv += '<span class="title">Request Headers: </span>';
+			serviceDiv += requestHeaders;
+		}
+		var responseHeaders = service["response_headers"]
+		if(responseHeaders){
+			serviceDiv += '<br/>';
+			serviceDiv += '<span class="title">Response Headers: </span>';
+			serviceDiv += responseHeaders;
+		}
+		serviceDiv += '<br/>';
+		serviceDiv += '<a href="#" id="delete_'+service["id"]+'">Delete</a>'
+		serviceDiv += '</div>';		
+		
+		
+		return serviceDiv;
+	}
+
+</script>
+<style type="text/css">
+
+	#checks{
+		padding-top: 20px;
+		padding-bottom: 20px;
+		width: auto;
+		height: auto;
+	}
+	
+	.title{
+		font-weight: bold;
+	}
+	
+	#soap_service input[type='text'],#rest_service input[type='text']{
+		width:250px;
+	}
+
+</style>
+</head>
+<body>
+	<!-- DIALOGS -->
+	<div id="messages" title="Attention"></div>
+	<div id="soap_service" title="Add SOAP Service">
+		<div>Name<br/> <input type="text" name="name" id="name"/></div>
+		<div>Id<br/> <input type="text" name="id" id="id"/></div>
+		<div>Wsdl<br/> <input type="text" name="wsdl" id="wsdl"/></div>
+		<div>Operation Namespace URI<br/> <input type="text" name="uri" id="uri"/></div>
+		<div>Operation<br/> <input type="text" name="operation" id="operation"/></div>
+	</div>
+	<div id="rest_service" title="Add SOAP Service">
+		<div>Name<br/> <input type="text" name="name_rest" id="name_rest"/></div>
+		<div>Id<br/> <input type="text" name="id_rest" id="id_rest"/></div>
+		<div>URL<br/> <input type="text" name="url" id="url"/></div>
+		<div>Method<br/> <select name="method" id="method">
+							<option value=""></option>
+							<option value="GET">GET</option>
+							<option value="POST">POST</option>
+							<option value="DELETE">DELETE</option>
+							<option value="PUT">PUT</option>
+						 </select>
+		</div>
+		<div>MediaType<br/><select name="mediaType" id="mediaType">
+							<option value=""></option>
+							<option value="application/json">JSON</option>
+							<option value="application/xml">XML</option>
+						 </select> 
+		</div>
+		<div>Request Headers<br/> <input type="text" name="requestHeaders" id="requestHeaders"/></div>
+		<div>Response Headers<br/> <input type="text" name="responseHeaders" id="responseHeaders"/></div>
+	</div>
+	
+	<!-- DIALOGS -->
+	<div id="welcome"><h1><a href="#" id="home">Home</a> &gt; Composed Services</h1></div>
+	<h2>Services</h2>
+	<a href="#" id="soap">New SOAP Service</a> <a href="#" id="rest">New RESTful Service</a>
+	<div id="checks">
+	</div>
+	
+	<div id="accordion_cont">
+	</div>
+
+</body>
+</html>

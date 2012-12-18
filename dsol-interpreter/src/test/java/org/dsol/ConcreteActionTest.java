@@ -1,0 +1,93 @@
+package org.dsol;
+
+import java.util.Arrays;
+import java.util.List;
+
+import junit.framework.Assert;
+
+import org.dsol.annotation.ObjectName;
+import org.dsol.annotation.When;
+import org.junit.Test;
+
+public class ConcreteActionTest {
+	
+	@Test
+	public void getParameterNamesTest() throws SecurityException, NoSuchMethodException{
+
+		ConcreteAction concreteAction = new ConcreteAction(TestActions.class.getMethod("test",String.class,String.class), null);
+		List<String> objectNames = concreteAction.getParameterNames();
+		
+		String expected[] = {"a","b"};
+
+		Assert.assertEquals(Arrays.asList(expected), objectNames);	
+
+	}
+	
+	@Test
+	public void getParameterNamesTest2() throws SecurityException, NoSuchMethodException{
+		
+		ConcreteAction concreteAction = new ConcreteAction(TestActions.class.getMethod("test2",String.class,String.class), null);
+		List<String> objectNames = concreteAction.getParameterNames();
+		Assert.assertNull(objectNames);	
+
+	}
+	
+	@Test
+	public void holdWhenExpressionTest() throws NoSuchMethodException, SecurityException{
+		ConcreteAction concreteActionTest2 = new ConcreteAction(TestActions.class.getMethod("test2",String.class,String.class), null);
+		ConcreteAction concreteActionTest3 = new ConcreteAction(TestActions.class.getMethod("test3",String.class,String.class), null);
+		ConcreteAction concreteActionTest4 = new ConcreteAction(TestActions.class.getMethod("test4",String.class,String.class), null);
+		
+		InstanceSession instanceSession = new InstanceSession();
+		instanceSession.put("a", 6);
+		instanceSession.put("b", 7);
+		
+		Assert.assertTrue(concreteActionTest2.holdWhenExpression(instanceSession, Arrays.asList("b")));
+		Assert.assertTrue(concreteActionTest3.holdWhenExpression(instanceSession, Arrays.asList("a","b")));
+		Assert.assertFalse(concreteActionTest4.holdWhenExpression(instanceSession, Arrays.asList("a","b")));
+		
+	}
+	
+	@Test
+	public void getParametersObjectsNamesTest() throws NoSuchMethodException, SecurityException{
+		ConcreteAction concreteActionTest = new ConcreteAction(TestActions.class.getMethod("test",String.class,String.class), null);
+		ConcreteAction concreteActionTest2 = new ConcreteAction(TestActions.class.getMethod("test2",String.class,String.class), null);
+		ConcreteAction concreteActionTest2_1 = new ConcreteAction(TestActions.class.getMethod("test2_1",String.class,String.class), null);
+		ConcreteAction concreteActionTest3 = new ConcreteAction(TestActions.class.getMethod("test3",String.class,String.class), null);
+		
+		List<String> objectNames = concreteActionTest.getParametersObjectsNames(null);
+		Assert.assertEquals(Arrays.asList("a","b"), objectNames);
+		
+		List<String> templateParamList = Arrays.asList("b_name");
+		objectNames = concreteActionTest2.getParametersObjectsNames(templateParamList);
+		Assert.assertEquals(Arrays.asList("a","b_name"), objectNames);
+		
+		templateParamList = Arrays.asList("a");
+		objectNames = concreteActionTest2_1.getParametersObjectsNames(templateParamList);
+		Assert.assertEquals(Arrays.asList("a","b_name"), objectNames);
+		
+		templateParamList = Arrays.asList("a_name","b_name");
+		objectNames = concreteActionTest3.getParametersObjectsNames(templateParamList);
+		Assert.assertEquals(Arrays.asList("a_name","b_name"), objectNames);
+	}
+
+	private class TestActions{
+		
+		
+		public void test(@ObjectName("a") String a,
+						 @ObjectName("b") String b){}
+		
+		public void test2(@ObjectName("a") String a, String b){}
+		
+		public void test2_1(String a, @ObjectName("b_name") String b){}
+		
+		@When("a > 5")
+		public void test3(String a, String b){}
+
+		@When("b < 5")
+		public void test4(String a, String b){}
+
+		
+	}
+
+}

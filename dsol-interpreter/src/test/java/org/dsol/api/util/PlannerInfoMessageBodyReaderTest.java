@@ -1,0 +1,37 @@
+package org.dsol.api.util;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+
+import javax.ws.rs.WebApplicationException;
+
+import org.dsol.management.PlannerInfo;
+import org.junit.Assert;
+import org.junit.Test;
+
+public class PlannerInfoMessageBodyReaderTest {
+
+	@Test
+	public void testIsReadable() {
+		PlannerInfoMessageBodyReader actionsMessageBodyReader = new PlannerInfoMessageBodyReader();
+		Assert.assertTrue(actionsMessageBodyReader.isReadable(PlannerInfo.class, null,null,null));
+	}
+	
+	@Test
+	public void testReadFrom() throws WebApplicationException, IOException {
+		PlannerInfoMessageBodyReader plannerInfoMessageBodyReader = new PlannerInfoMessageBodyReader();
+		
+		
+		
+		//String data = "{\"initial_state\":\"true\",\"goal\":\"goal_value\", \"actions\":[{\"name\":\"action1\",\"seam\":false,\"enabled\":true,\"params\":[],\"pre\":[],\"post\":[\"end\"]}]}";
+		String data = "{\"initial_state\":\"true\",\"goal\":\"goal_value\",\"actions\":[{\"name\":\"getHour\",\"seam\":false,\"enabled\":true,\"params\":[],\"pre\":[],\"post\":[\"hourFetched\"]},{\"name\":\"getHour\",\"seam\":false,\"enabled\":true,\"params\":[],\"pre\":[],\"post\":[\"hourFetched\"]}]}";
+		ByteArrayInputStream bis = new ByteArrayInputStream(data.getBytes());
+		
+		PlannerInfo plannerInfo = plannerInfoMessageBodyReader.readFrom(null,null,null,null,null, bis);
+
+		Assert.assertEquals(2, plannerInfo.getActions().size());
+		Assert.assertEquals("true", plannerInfo.getInitial_state());
+		Assert.assertEquals("goal_value", plannerInfo.getGoal());
+	}
+
+}

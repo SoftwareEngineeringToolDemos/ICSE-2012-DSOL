@@ -1,0 +1,152 @@
+<html>
+<head>
+<title>.:: DSOL Management ::.</title>
+
+
+
+<link type="text/css" href="app/res/css/ui-lightness/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+<link type="text/css" href="app/res/css/general.css" rel="stylesheet" />
+	
+<script type="text/javascript" src="app/res/js/jquery-1.6.4.js"></script>
+<script type="text/javascript" src="app/res/js/jquery.json-2.2.min.js"></script>
+<script type="text/javascript" src="app/res/js/jquery-ui-1.8.16.custom.min.js"></script>
+
+<script>
+	var info;
+	
+	$(document).ready(function(){
+		$("#actions,#orchestration_interface,#services").button();
+		$("#info").dialog({autoOpen:false,modal:true,width:600});
+
+		$.get('management/instances', function(data) {
+			info = data;
+			for(var i = 0;i < data.length;i++){
+		  		var ref = data[i]['ref'];
+		  		var colId = '<td>'+data[i]['id']+'</td>';
+		  		var actions = '<td><a href="app/instances/'+ref+'" title="Show actions" class="ui-icon ui-icon-info data_icon"></a></td>';
+		  		var orchestration_interface = '<td><a href="app/instances/'+ref+'/orchestration_interface" title="Show orchestration interface" class="ui-icon ui-icon-transfer-e-w data_icon"></a></td>';
+		  		var colInstanceSession = '<td><a href="javascript:showData('+i+')" class="ui-icon ui-icon-document data_icon" title="Show instance session data"></a></td>';
+		  		var colState = '<td><a href="javascript:showState('+i+')" class="ui-icon ui-icon-circle-zoomout data_icon" title="Show current state of execution"></a></td>';
+		  		var colPlan = '<td><a href="javascript:showPlan('+i+')" class="ui-icon ui-icon-script data_icon" title="Show executed plan"></a></td>';
+		  		$("#instances_table > tbody").append('<tr>'+colId+orchestration_interface+actions+colInstanceSession+colPlan+colState+'</tr>');
+		  	}
+		},"json");	
+		
+	});
+
+	function showData(data){
+		$("#info").html("");
+		var html = "<table class='data_table'>";
+		for(var propertyName in info[data]['values']) {
+			html += "<tr>";
+			html += "<td>";
+			html += propertyName;
+			html += "</td>";
+			html += "<td>";
+			html += info[data]['values'][propertyName];
+			html += "</td>";
+			html += "</tr>";
+		}
+		html += "</table>";
+		$("#info").html(html);
+		$( "#info" ).dialog( "option", "title", "Instance Session" );
+		$("#info").dialog('open');
+	}
+
+	function showState(data){
+		
+		$("#info").html("");
+		var html = "<table class='data_table'>";
+		var states = info[data]["plan_result"]["states"];
+		if(states.length > 0 ){
+			var final_state = states[states.length - 1];
+			for(var i = 0;i < final_state.length;i++){
+				html += "<tr><td>";
+				html += final_state[i];
+				html += "</td></tr>";
+			}
+
+		}
+		
+ 		html += "</table>";
+		$("#info").html(html);
+		$("#info").dialog( "option", "title", "Current state of execution" );
+		$("#info").dialog('open');
+		
+	}
+
+	
+	function showPlan(data){
+		$("#info").html("");
+		var html = "<table class='data_table'>";
+		var steps = info[data]["plan_result"]["plan"];
+		for(var i = 0;i<steps.length;i++){
+			html += "<tr><td>";
+			html += steps[i]["name"];
+			html = html+ "(";
+			var params = steps[i]["params"];
+			for(var j = 0;j<params.length;j++){
+				if(j != 0){
+					html = html + ", "  
+				}
+				html = html + params[j];
+			}
+			html = html + ")";
+
+			html += "</td></tr>";
+		}
+ 		html += "</table>";
+		$("#info").html(html);
+		$( "#info" ).dialog( "option", "title", "Executed Plan" );
+		$("#info").dialog('open');
+	}
+</script>
+<style>
+		#instances-contain h1 { font-size: 1.2 em; margin: .6em 0; }
+		div#instances-contain { width: 350px; margin: 20px 0;width: 100%;}
+		div#instances-contain table { margin: 1em 0; border-collapse: collapse; width: 100%; }
+		
+		div#instances-contain table td, div#instances-contain table th { border: 1px solid #eee; padding: .6em 10px;}
+		
+		.data{
+			text-align: center;
+		}
+		
+		.data_icon{
+			margin: auto;
+		}
+
+		.data_table{
+			width:100%;
+		}
+</style>
+</head>
+
+<body>
+	<div id="info" title="Instance Data">
+	</div>
+	<div id="welcome"><h1>Welcome to the DSOL Management Interface</h1></div>
+	<a href="app/instances/dsol_base" id="actions">Available actions</a><a href="app/instances/dsol_base/orchestration_interface" id="orchestration_interface">Orchestration Interface</a><a href="app/services" id="services">Services</a>
+
+	
+	<div id="instances-contain" class="ui-widget">
+		<h1>Running instances</h1>
+		<table id="instances_table" class="ui-widget ui-widget-content">
+				<thead>
+					<tr class="ui-widget-header">
+						<th style="text-align: left;width:50%">Instance id</th>
+						<th style="text-align: center;width:10%">Orchestration Interface</th>
+						<th style="text-align: center;width:10%">Actions</th>
+						<th style="text-align: center;width:10%">Instance Session</th>
+						<th style="text-align: center;width:10%">Executed Plan</th>						
+						<th style="text-align: center;width:10%">State</th>
+					</tr>
+				</thead>
+				<tbody>
+				</tbody>	
+			</table>
+	</div>
+	
+</body>
+
+</html>

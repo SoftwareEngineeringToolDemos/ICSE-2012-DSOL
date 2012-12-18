@@ -1,0 +1,12 @@
+action bookHotel (City,CheckIn,CheckOut)
+pre: 	accommodation(hotel), city(City), 
+		date(CheckIn),date(CheckOut),
+		at(City,CheckIn,CheckOut)
+post: accommodationBooked (City,CheckIn,CheckOut),details(accommodation)
+
+action bookHostel (City,CheckIn,CheckOut)
+pre: 	accommodation(hostel), city(City),
+		date(CheckIn),date(CheckOut),
+		at(City,CheckIn,CheckOut)
+post: accommodationBooked (City,CheckIn,CheckOut), details(accommodation)
+

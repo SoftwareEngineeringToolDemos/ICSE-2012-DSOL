@@ -1,0 +1,18 @@
+/*retrieve poll information*/
+action getPoll(Id)
+pre: pollId(Id)
+post: poll(requestedPoll), text(requestedPoll.title)
+
+/*translate poll data*/
+action translatePoll(Poll, From, To)
+pre: poll(Poll), detected_language(From), language(To)
+post: translated(Poll)
+
+/*detect the text language*/
+action detectLanguage(Text)
+pre: text(Text)
+post: detected_language(text_language)
+
+action smartTranslatePoll(Poll, To)
+pre: poll(Poll), language(To)
+post: translated(Poll)

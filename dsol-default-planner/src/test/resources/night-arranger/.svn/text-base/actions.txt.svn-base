@@ -1,0 +1,62 @@
+//Weather Services
+action getWeatherForecastWithWunderground(Location)
+pre: searchLocation(Location)
+post: forecast_info(wunderground_forecast)
+qos: {reliability:0.95, anticipation: 0.7}
+
+action getWeatherForecastWithWorldWeatherOnline(Location)
+pre: searchLocation(Location)
+post: forecast_info(worldweatheronline_forecast)
+qos: {reliability:0.98, anticipation: 0.5}
+
+action getWeatherForecastWithGoogle(Location)
+pre: searchLocation(Location)
+post: forecast_info(google_forecast)
+qos: {reliability:0.94, anticipation: 0.5}
+
+//Geocoding
+
+action getCoordinateUsingBingMaps(Location)
+pre: searchLocation(Location)
+post: searchCoordinate(bing_coordinate)
+qos: {reliability:0.9}
+
+action getCoordinateUsingYahooMaps(Location)
+pre: searchLocation(Location)
+post: searchCoordinate(yahoo_coordinate)
+qos: {reliability:1}
+
+action getCoordinateUsingGoogleMaps(Location)
+pre: searchLocation(Location)
+post: searchCoordinate(google_coordinate)
+qos: {reliability:0.95}
+
+//Places Services
+
+action searchWithGooglePlaces(Coordinate)
+pre: searchCoordinate(Coordinate)
+post: list_of_places(google_places)
+qos: {reliability:0.95, coverage: 1}
+
+action searchWithYahooLocal(Coordinate)
+pre: searchCoordinate(Coordinate)
+post: list_of_places(yahoo_places)
+qos: {reliability:0.98, coverage:0.5}
+
+//Map Services
+
+action createMapUsingBing(Center, Places)
+pre: searchLocation(Center), list_of_places(Places)
+post: map(bing_map)
+
+//Recommendation Services
+
+action getRecommendationsUsingYelp(Places)
+pre: list_of_places(Places)
+post: list_of_places_with_recommendation(yelp_places)
+
+//Other actions
+
+action createResult(Places, ForecastInfo, Map)
+pre: list_of_places_with_recommendation(Places), forecast_info(ForecastInfo), map(Map)
+post: place_suggestions

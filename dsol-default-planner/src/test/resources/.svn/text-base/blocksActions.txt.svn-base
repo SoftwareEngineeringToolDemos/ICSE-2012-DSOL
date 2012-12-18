@@ -1,0 +1,12 @@
+action moveTo(B1,B2,Clamp)
+pre: block(B1), block(B2), clear(B2), holding(Clamp,B1)
+post: on(B1,B2), ~clear(B2), ~holding(Clamp), ~holding(Clamp,B1)
+
+action moveToTable(B, Clamp)
+pre: block(B), clear(B), holding(Clamp,B)
+post: on(B, table), ~holding(Clamp), ~holding(Clamp,B)
+
+action pickUp(B1,B2, Clamp)
+pre: on(B1,B2), clear(B1), ~holding(Clamp)
+post: clear(B2), ~on(B1,B2), holding(Clamp,B1), holding(Clamp)
+

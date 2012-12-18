@@ -1,0 +1,315 @@
+<html>
+<head>
+<title>.:: DSOL Management - Instances ::.</title>
+
+<link type="text/css" href="../../res/css/ui-lightness/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+<link type="text/css" href="../../res/css/general.css" rel="stylesheet" />
+	
+<script type="text/javascript" src="../../res/js/jquery-1.6.4.js"></script>
+<script type="text/javascript" src="../../res/js/jquery.json-2.2.min.js"></script>
+<script type="text/javascript" src="../../res/js/jquery-ui-1.8.16.custom.min.js"></script>
+<script type="text/javascript" src="../../res/js/general.js"></script>
+
+<script type="text/javascript">
+
+	var instance_ref = location.pathname.split("/").reverse()[1];
+	var info;
+	
+	var methods_info = [];
+	
+	var send_data = false;
+	var applyForRunningInstances = false;
+
+	
+	$(document).ready(function(){
+		
+		$.ajax({
+			  url: '../../../management/instances/'+instance_ref,
+			  success: function(data) {info = data;},
+			  dataType: "json",
+			  async:false
+		});
+		
+		//Home link action
+		$("#home").click(function() {
+			var parts = location.pathname.split("/");
+			window.location="/"+parts[1]+"/"+parts[2];
+		});
+
+		//Loading page info
+		if (instance_ref != 'dsol_base') {
+			$("#for_instance").html("&nbsp;for instance " + info['id']);
+		}
+		
+		var orchestration_interface_info = info["orchestration_interface"];
+		$("#className").html(orchestration_interface_info["name"]);
+		
+		var methods = orchestration_interface_info["methods"]
+		
+		$("#methodsAccordion").html(createMethodsAccordion(methods));
+		$("#methodsAccordion").accordion({
+			collapsible: true,active: false
+		});
+		
+		$(".link_plan").button();
+		
+		$('.initial_state_link, .goal_link').addClass("ui-state-default");
+		$('.initial_state_link, .goal_link').addClass("ui-corner-all");
+		
+		
+		
+		$('.initial_state_link,.goal_link').hover(
+				function() { $(this).addClass('ui-state-hover'); }, 
+				function() { $(this).removeClass('ui-state-hover'); }
+			);
+
+		
+		$('#messages').dialog({autoOpen : false,modal : true});
+		$('#change_dialog').dialog({modal:true, width:500, autoOpen:false});
+		$('#save').button();
+		
+		$('#save').click(function(){
+			if (instance_ref == "dsol_base") {// it means that the default actions
+				// are being modified
+				$("#dialog-confirm").dialog('open');// see dialog definition to
+				// understand cotrol flow
+				// after the dialog is
+				// closed
+			} else {
+				// if actions for a single instance is being modified, for sure it
+				// will not be applied for all running instances
+				save(false);
+			}
+		});
+				
+		$("#dialog-confirm").dialog({
+			resizable : false,
+			height : 200,
+			modal : true,
+			autoOpen : false,
+			open : function() {
+				send_data = false;
+			},
+			close : function() {
+				if (send_data) {
+					save(applyForRunningInstances);
+				}
+			},
+			buttons : {
+				"Yes" : function() {
+					send_data = true;
+					applyForRunningInstances = true;
+					$(this).dialog("close");
+				},
+				"No" : function() {
+					send_data = true;
+					applyForRunningInstances = false;
+					$(this).dialog("close");
+				}
+			}
+		});
+		
+		
+
+		
+	});
+	
+	function createMethodsAccordion(methods){
+		var html = '';
+		for(var i=0;i<methods.length;i++){
+			
+			var method = methods[i]["return_type"];
+			method += " " +methods[i]["name"];
+			method += "(";
+			method += ")";
+			html += '<h3><a href="#">'+methods[i]["name"]+'</a></h3>'
+			
+			
+			var parameters = "";
+			
+			var parameterTypes = methods[i]["parameter_types"];
+			var parameterFormalNames = methods[i]["parameter_formal_names"];
+			var parameterDefinedNames = methods[i]["parameter_defined_names"];
+			
+			var initial_state = "";
+
+			
+			for(var j=0;j<parameterTypes.length;j++){
+				if(j != 0){
+					parameters += ", ";
+					initial_state += ", ";
+				}
+				parameters += parameterTypes[j];
+				parameters += " <span class='objName'>"+ parameterFormalNames[j] + "</span>";
+				
+				initial_state += parameterDefinedNames[j] + "( "+parameterFormalNames[j] +" )"
+			}
+			
+			var user_defined_initial_state = methods[i]["initial_state"];
+			
+			if(user_defined_initial_state.length > 0){
+				initial_state += ", " + user_defined_initial_state;
+			}
+			
+			html += '<div class="info">';
+				html += '<span class="title">Parameters: </span>';
+				html += parameters;
+				html += '<br/>';
+				html += '<span class="title">Returns: </span>';
+				html += methods[i]["return_type"] + " [<span class='objName'>" +methods[i]["return_obj"]+"</span> from Instance Session]" ;			
+				
+				html += '<div class="planning_info">';
+					html += '<span class="planning_info_title">Planning info:</span>';
+					html += '<div class="initial_state">';
+						html += '<a href="javascript:showInitialState('+i+')" class="initial_state_link" title="Edit initial state"><span class="ui-icon ui-icon-pencil"></span></a><span class="title">Initial state: </span>';
+						html += '<span id="initial_state_val_'+i+'">';	
+						html += initial_state;
+						html += '</span>';
+					html += '</div>';//close initial_state
+		
+					html += '<div class="goal">';
+						html += '<a href="javascript:showGoal('+i+')" class="goal_link" title="Edit goal"><span class="ui-icon ui-icon-pencil"></span></a><span class="title">Goal: </span>';
+						html += '<span id="goal_val_'+i+'">';
+						html += methods[i]["goal"];
+						html += '</span>';
+					html += '</div>';//close goal
+				html += '</div>';
+			html += '</div>';
+			
+			methods_info.push({"name":methods[i]["name"], "generated_initial_state":initial_state, "user_defined_initial_state":user_defined_initial_state, "goal":methods[i]["goal"]});
+		}
+		return html;
+	}
+	
+	function showInitialState(methodIndex){
+		var method = methods_info[methodIndex];
+		$("#generated_initial_state").html("<span class='title'>Initial State generated from method signature </span><br/>"+method["generated_initial_state"]+"<br><br><span class='title'>Additional initial state</span><br/>");
+		$("#text_change_dialog").val(method["user_defined_initial_state"]);
+		$( "#change_dialog" ).dialog( "option", "title", "Initial State :: method "+method["name"] );
+		
+		$( "#change_dialog" ).dialog( "option","buttons", 
+					{ "OK": function() { 
+								var initial_state_value = jQuery.trim($("#text_change_dialog").val());
+								methods_info[methodIndex]["user_defined_initial_state"] = initial_state_value;
+								
+								var initial_state = methods_info[methodIndex]["generated_initial_state"];
+								
+								if(initial_state_value.length > 0){
+									initial_state = initial_state + ", " +initial_state_value;
+								}							
+								$("#initial_state_val_"+methodIndex).html(initial_state);
+								
+								$( this ).dialog( "close" );
+							}
+					}
+		);
+		
+		$('#change_dialog').dialog('open');
+	}
+	
+	function showGoal(methodIndex){
+		var method = methods_info[methodIndex];
+		$("#generated_initial_state").html("");
+		$("#text_change_dialog").val(method["goal"]);
+		$( "#change_dialog" ).dialog( "option", "title", "Goal :: method "+method["name"] );
+		
+		$( "#change_dialog" ).dialog( "option","buttons", 
+					{ "OK": function() { 
+								var goal_value = jQuery.trim($("#text_change_dialog").val());
+
+								if(goal_value.length == 0){
+									alert("Goal must not be empty.");
+									return;
+								}			
+								methods_info[methodIndex]["goal"] = goal_value;
+								$("#goal_val_"+methodIndex).html(goal_value);								
+								$( this ).dialog( "close" );
+							}
+					}
+		);
+		
+		$('#change_dialog').dialog('open');
+	}
+	
+	function save(applyForRunningInstances){
+		var new_methods_info = [];
+		for(var i =0;i<methods_info.length;i++){
+			new_methods_info.push({"name":methods_info[i]["name"], "initial_state":methods_info[i]["user_defined_initial_state"], "goal":methods_info[i]["goal"]});
+		}
+		
+		$.ajax({
+			  url: '../../../management/instances/'+instance_ref+'/methods?all='+applyForRunningInstances,
+			  type: "POST",
+			  contentType: "application/json",
+			  data: $.toJSON({"methods_info":new_methods_info}),
+			  success: function() {
+				  show_message('Success','<span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>Changes saved successfully.');
+			 },
+			  error: function() {
+				  show_message('Error','<span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 50px 0;"></span>Error while saving changes.');
+			  },
+			});
+	}
+	
+</script>
+
+<style type="text/css">
+	.info{
+		font-size: 13px;
+	}
+	.title{
+		font-weight: bold;
+	}
+	.planning_info_title{
+		font-weight: bold;
+	}	
+	.objName{
+		font-weight: bold;
+	}
+
+	.planning_info{
+		padding-top: 10px;
+		padding-left: 7px;
+	}
+	
+	.initial_state{
+		padding-top: 5px;	
+	}
+	.goal{
+		padding-top: 10px;	
+	}
+	
+	.initial_state_link, .goal_link{
+		padding: 2px;
+		 float: left;
+		 margin: -2px 5px 0 0;
+	}
+	
+	#generated_initial_state{
+		padding-bottom: 10px;
+	}
+</style>
+</head>
+<body>
+	<!-- DIALOGS -->
+	<div id="messages" title="Attention"></div>
+	<div id="change_dialog" title="Initial State :: method M">
+			<div id="generated_initial_state"></div>  
+			<textarea id="text_change_dialog" style="width:470px;height: 100px"></textarea>
+	</div>
+	<div id="dialog-confirm" title="Apply for running instances?">
+		<p>
+			<span class="ui-icon ui-icon-alert"
+				style="float: left; margin: 0 7px 20px 0;"></span>
+				Would you like to apply changes also for running instances?
+		</p>
+	</div>
+	<!-- DIALOGS -->
+	<div id="welcome"><h1><a href="#" id="home">Home</a> &gt;Orchestration Interface <span id="for_instance"></span></h1></div>
+	<h2>Class: <span id="className"></span> <a id="save">Save</a></h2>
+	
+	<h2>Methods</h2>
+	<div id="methodsAccordion">
+	</div>
+</body>
+</html>

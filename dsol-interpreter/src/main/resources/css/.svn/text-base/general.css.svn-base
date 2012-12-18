@@ -1,0 +1,32 @@
+body {
+	font-family: "Trebuchet MS", sans-serif;
+	font-size: 13px;
+}
+
+.ui-button-text {
+	font-family: "Trebuchet MS", sans-serif;
+	font-size: 12px;
+	font-weight: bold;
+}
+
+input[type='text'] {
+	border: 1px solid #cccccc;
+	font-family: "Trebuchet MS", sans-serif;
+	font-size: 13px;
+}
+
+#welcome {
+	border-bottom: 1px solid #eee;
+	margin-bottom: 10px;
+}
+
+#welcome h1 {
+	font-weight: bold;
+	font-size: 25px;
+	margin-bottom: 5px;
+}
+
+h1 a:link,h1 a:visited {
+	color: #1c94c4;
+	font-weight: bold;
+} /* unvisited link */

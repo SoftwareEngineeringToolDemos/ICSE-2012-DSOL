@@ -1,0 +1,51 @@
+package org.dsol.planner.impl;
+
+import graphplan.domain.Operator;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.dsol.planner.api.AbstractAction;
+
+public class AbstractActionImpl extends AbstractAction {
+
+	private Operator operatorInstance;
+
+	public AbstractActionImpl(Operator operator) {
+		this.operatorInstance = operator;
+	}
+
+	public Operator getOperator() {
+		return operatorInstance;
+	}
+
+	@Override
+	public String toString() {
+		return operatorInstance.toString();
+	}
+
+	public String getName() {
+		return operatorInstance.getFunctor();
+	}
+
+	public List<String> getParamList() {
+
+		List terms = operatorInstance.getTerms();
+		List<String> termsStr = new ArrayList<String>();
+		for (Object term : terms) {
+			termsStr.add(term.toString());
+		}
+		return termsStr;
+	}
+
+	@Override
+	public Double getReliability() {
+		Double reliability = operatorInstance.getReliability();
+		return reliability == null? 0d:reliability;
+	}
+
+	@Override
+	public boolean isSeam() {
+		return operatorInstance.isSeam();
+	}
+}

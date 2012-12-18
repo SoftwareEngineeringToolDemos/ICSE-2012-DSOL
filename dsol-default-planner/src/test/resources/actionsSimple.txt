@@ -1,0 +1,39 @@
+action s1
+pre: a
+post: b
+
+action s2
+pre: b
+post: c
+
+action s3
+pre: b
+post: c
+
+action s4
+pre: a
+post: d
+
+action s5
+pre: d
+post: e
+
+action s6
+pre: e,w
+post: c
+
+action s7
+pre: e
+post: f
+
+action s8
+pre: e
+post: g
+
+action s9
+pre: g
+post: h
+
+action s10
+pre: h
+post: c

@@ -1,0 +1,67 @@
+package org.dsol.planner.impl;
+
+import graphplan.domain.Operator;
+import graphplan.parser.ParseException;
+import graphplan.parser.PlannerParser;
+
+import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.dsol.planner.api.Fact;
+import org.dsol.planner.api.Goal;
+import org.dsol.planner.api.PlanResult;
+import org.dsol.planner.api.State;
+import org.junit.Test;
+
+public class PlanResultTest {
+
+	
+	
+	@Test
+	public void toJSON() throws ParseException {
+		List<Fact> initialState = new ArrayList<Fact>();
+		initialState.add(new Fact("a"));
+		initialState.add(new Fact("b"));
+		initialState.add(new Fact("obj(obj)"));
+		
+		Goal goal = new Goal();
+		goal.add(new Fact("c"));
+		goal.add(new Fact("d"));
+
+		
+		StringBuilder builder = new StringBuilder();
+		builder.append("action makeC");
+		builder.append(System.getProperty("line.separator"));
+		builder.append("pre:a");
+		builder.append(System.getProperty("line.separator"));
+		builder.append("post: c");
+		builder.append(System.getProperty("line.separator"));
+		builder.append(System.getProperty("line.separator"));
+		
+		builder.append("action makeD(Obj)");
+		builder.append(System.getProperty("line.separator"));
+		builder.append("pre:b,obj(Obj)");
+		builder.append(System.getProperty("line.separator"));
+		builder.append("post: d");
+		builder.append(System.getProperty("line.separator"));
+
+		List<Operator> operators = new PlannerParser().parseOperators(new ByteArrayInputStream(builder.toString().getBytes()));
+		
+		Operator operator0 = operators.get(0);
+		Operator operator1 = operators.get(1);
+	
+		PlanResult planResult = new PlanResult(new StateImpl(initialState), goal);
+		planResult.addStep(0, new AbstractActionImpl(operator0));
+		
+		State currState = new StateImpl(initialState).apply(Util.getPropositionsAsFacts(operator0.getEffects()));
+		planResult.addState(currState.clone());
+
+		planResult.addStep(1, new AbstractActionImpl(operator1));
+		planResult.addState(currState.apply(Util.getPropositionsAsFacts(operator1.getEffects())).clone());
+		
+		//Assert.assertEquals("{\"plan\":[[{\"name\":\"makeC\",\"params\":[]}],[{\"name\":\"makeD\",\"params\":[\"Obj\"]}]],\"initial_state\":[\"a\",\"b\",\"obj(obj)\"],\"goal\":[\"c\",\"d\"],\"states\":[[\"a\",\"b\",\"obj(obj)\",\"c\"],[\"a\",\"b\",\"obj(obj)\",\"c\",\"d\"]]}", planResult.toJSON().toString());
+	}
+	
+	
+}

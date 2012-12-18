@@ -1,0 +1,1218 @@
+/*
+ * Copyright (c) 2007-2008 Inturico Engineering GmbH
+ * Copyright (c) 2008-2011 Doodle AG
+ * $Id: polls.css 27029 2012-03-08 14:44:27Z og $
+ */
+/* POLL */
+#pollArea {
+    padding-bottom: 15px;
+}
+
+#pollArea > form {
+    display: inline-block;
+}
+
+/* participation table */
+table.poll {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+/* participation table - header / footer */
+asep {
+    cursor: pointer;
+}
+
+table.poll th, table.poll td {
+    font-size: 12px;
+    line-height: 14px;
+    font-weight: normal;
+}
+
+table.poll th b {
+    font-weight: bold;
+}
+
+table.poll tr.header th, table.poll tr.header td {
+    padding: 0 10px 0;
+}
+
+table.poll tr.date th, table.poll tr.date td {
+    background: #3385e4;
+    color: #fff;
+}
+
+table.poll tr.date th a, table.poll tr.date td a {
+    color: #fff;
+}
+
+table.poll tr.date.month th {
+    padding-top: 7px;
+    padding-bottom: 3px;
+}
+
+table.poll tr.date.month td {
+    padding-top: 3px;
+    padding-bottom: 7px;
+}
+
+table.poll tr.date.month .asep {
+    background: url('horizontalsprite.png') -222px 0 repeat-y;
+    padding: 0;
+    min-width: 36px;
+    width: 36px;
+    cursor: pointer;
+    vertical-align: top;
+}
+
+table.poll tr.date.month .asep > div {
+    background: url('horizontalsprite.png') 0 0 no-repeat;
+    padding: 0;
+    min-width: 36px;
+    width: 36px;
+    cursor: pointer;
+    height: 8px;
+}
+
+table.poll tr.date.month td.asep {
+    background: url('horizontalsprite.png') -222px bottom repeat-y;
+    vertical-align: bottom;
+}
+
+table.poll tr.date.month td.asep > div {
+    background: url('horizontalsprite.png') -108px -52px no-repeat;
+}
+
+table.poll tr.date.month th.msep, table.poll tr.date.month td.msep {
+    background: url('../../graphics/polls/tick53r.png') right 9px no-repeat #3385e4;
+    padding-right: 15px;
+}
+
+table.poll tr.date.month td.msep {
+    background-position: right -18px;
+}
+
+table.poll tr.date.day th, table.poll tr.date.day td {
+    padding-right: 10px;
+}
+
+table.poll tr.date.day th {
+    padding-bottom: 6px;
+}
+
+table.poll tr.date.day td {
+    padding-top: 6px;
+}
+
+table.poll tr.date.day.notime th {
+    border-bottom: 1px solid #fff;
+}
+
+table.poll tr.date.day .asep {
+    background: url('horizontalsprite.png') -108px -5px no-repeat;
+    padding: 0;
+    min-width: 36px;
+    width: 36px;
+    cursor: pointer;
+}
+
+table.poll tr.date.day th.msep, table.poll tr.date.day td.msep {
+    background: url('../../graphics/polls/tick53r.png') right 0 repeat-y #3385e4;
+    padding-right: 15px;
+}
+
+table.poll tr.date.day td.msep {
+    background-position: right 0;
+}
+
+table.poll tr.date.day th.dsep, table.poll tr.date.day td.dsep {
+    background: url('../../graphics/polls/tick33r.png') right 0 repeat-y #3385e4;
+    padding-right: 13px;
+}
+
+table.poll tr.header.month th.xsep {
+    background: url('../../graphics/polls/tick31r.png') right 0 repeat-y #3385e4;
+    padding-right: 13px;
+}
+
+table.poll tr.date.day td.dsep {
+    background-position: right -15px;
+}
+
+table.poll tr.time th {
+    padding-top: 11px;
+    padding-bottom: 8px;
+    font-size: 11px;
+    color: #323232;
+}
+
+table.poll tr.time td {
+    padding-top: 9px;
+    padding-bottom: 11px;
+    font-size: 11px;
+    color: #323232;
+}
+
+table.poll tr.time .asep {
+    background: url('horizontalsprite.png') -36px 0 repeat-y;
+    padding: 0;
+    min-width: 36px;
+    width: 36px;
+    cursor: pointer;
+}
+
+table.poll tr.time td.asep {
+    background: url('horizontalsprite.png') -36px bottom repeat-y;
+}
+
+table.poll tr.time th.msep, table.poll tr.time td.msep {
+    background: url('../../graphics/polls/tick53r.png') right 0 repeat-y;
+    padding-right: 15px;
+}
+
+table.poll tr.time th.dsep, table.poll tr.time td.dsep {
+    background: url('../../graphics/polls/tick33r.png') right 0 repeat-y;
+    padding-right: 13px;
+}
+
+table.poll tr.time th.tsep, table.poll tr.time td.tsep {
+    background: url('../../graphics/polls/tick31r.png') right 0 repeat-y;
+    padding-right: 13px;
+}
+
+table.poll tr.time td.msep, table.poll tr.time td.dsep, table.poll tr.time td.tsep {
+    background-position: right -1px;
+}
+
+table.poll tr.time {
+    background: url('../../graphics/polls/tick11.png') 184px 0 repeat-y;
+}
+
+table.poll tr.time.foot {
+    background-position: 184px -1px;
+}
+
+table.poll tr.time th.rsep, table.poll tr.time td.rsep {
+    background: url('../../graphics/polls/tick11.png') right 0 repeat-y;
+}
+
+table.poll tr.time td.rsep {
+    background-position: right -1px;
+}
+
+table.poll tr th.nonHeader, table.poll tr td.nonHeader {
+    background: #fff;
+}
+
+table.poll tr th.nonHeader.partCount, table.poll tr td.partCount {
+    background: #fff;
+    padding: 0 0 9px 0;
+    vertical-align: bottom;
+    font-size: 12px;
+    font-weight: bold;
+    color: #323232;
+    min-width: 184px;
+    width: 184px;
+}
+
+#whoIsMissing > a {
+    font-weight: normal;
+    color: #06d;
+}
+
+/* participation table - participants  */
+table.poll tr.participant td, table.poll tr.participation td {
+    min-width: 20px;
+    border-bottom: 1px solid #fff;
+}
+
+table.poll tr.participant td.pname, table.poll tr.participation td.pname {
+    min-width: 182px;
+    width: 182px;
+    border-top: 1px solid #fff;
+    border-bottom: 2px solid #fff;
+    background: url('doodlesprite.png') -15px -302px no-repeat white;
+    padding: 0 2px 0 0;
+}
+
+table.poll tr.participation.partMyself td.pname {
+    background: url('doodlesprite.png') -15px -392px no-repeat white;
+}
+
+table.poll tr.participant td.pname:hover {
+    background: url('doodlesprite.png') -15px -332px no-repeat white;
+}
+
+table.poll td.pname div {
+    float: left;
+}
+
+table.poll td.pname div.pname {
+    font-size: 15px;
+    line-height: 15px;
+    padding: 8px 0 5px 0;
+    margin-left: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 135px;
+    position: relative;
+}
+
+table.poll td.pname div.pname.short {
+    max-width: 120px;
+}
+
+table.poll td.pname.long div.pname {
+    max-width: 159px;
+    padding: 8px 0 7px;
+    position: relative;
+}
+
+table.poll td.pname.long div.pname.short {
+    max-width: 144px;
+}
+
+table.poll td.pname div.icon {
+    margin: 9px 0 0 6px;
+    cursor: pointer;
+}
+
+/* participation table - preferences  */
+table.poll tr.participant td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+table.poll tr.participant td img {
+    display: inline;
+    font-size: 0;
+}
+
+table.poll tr.participant td.asep {
+    background-image: url('horizontalsprite.png');
+    background-position: -36px 0;
+    background-repeat: repeat-y;
+    padding: 0 0 1px 0;
+    border-bottom: none;
+    min-width: 36px;
+    width: 36px;
+    cursor: pointer;
+}
+
+table.poll tr.participant td.msep {
+    background-image: url('../../graphics/polls/tick53wr.png');
+    background-position: right -1px;
+    background-repeat: repeat-y;
+    padding-right: 5px;
+}
+
+table.poll tr.participant td.dsep, table.poll tr.participant td.tsep, table.poll tr.participant td.xsep {
+    background-image: url('../../graphics/polls/tick30wr.png');
+    background-position: right -1px;
+    background-repeat: repeat-y;
+    padding-right: 3px;
+}
+
+table.poll tr.participant td.y {
+    background-color: #d1f3d1;
+}
+
+table.poll tr.participant td.i {
+    background-color: #ffeda1;
+}
+
+table.poll tr.participant td.n {
+    background-color: #ffccca;
+}
+
+table.poll tr.participant td.q, table.poll td.h {
+    background-color: #eaeaea;
+}
+
+/* participation table - participation row */
+table.poll tr.participation td.asep {
+    background: url('horizontalsprite.png') -72px bottom no-repeat;
+    padding: 0 0 1px 0;
+    border-bottom: none;
+    min-width: 36px;
+    width: 36px;
+    cursor: pointer;
+}
+
+table.poll.withFooter tr.participation td.asep {
+    background: url('horizontalsprite.png') -36px bottom repeat-y;
+}
+
+table.poll tr.participation td.msep {
+    background-image: url('../../graphics/polls/tick53wr.png');
+    background-position: right -1px;
+    background-repeat: repeat-y;
+    padding-right: 5px;
+}
+
+table.poll tr.participation td.dsep, table.poll tr.participation td.tsep, table.poll tr.participation td.xsep {
+    background-image: url('../../graphics/polls/tick30wr.png');
+    background-position: right -1px;
+    background-repeat: repeat-y;
+    padding-right: 3px;
+}
+
+table.poll tr.participation.partMyself td {
+    background-color: #d0e3fb;
+}
+
+table.poll tr.participation.partMyself td:hover {
+    background-color: #b2d1f9;
+}
+
+table.poll tr.participation td, table.poll tr.participation.inEdit td {
+    text-align: center;
+    background-color: #eaeaea;
+}
+
+table.poll tr.participation td:hover, table.poll tr.participation.inEdit td:hover {
+    background-color: #d6d6d6;
+}
+
+table.poll tr.participation td, table.poll tr.participation.inEdit td, table.poll tr.participation td.disabled:hover, table.poll tr.participation.inEdit td.disabled:hover {
+    text-align: center;
+    background-color: #eaeaea;
+}
+
+table.poll tr.participation.threeLevel td {
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+table.poll tr.participation.threeLevel div.withHint {
+    position: relative;
+}
+
+table.poll tr.participation.threeLevel a.i {
+    padding: 2px 20px;
+}
+
+table.poll tr.participation.threeLevel .icon.threeLevelHint {
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    position: absolute;
+    right: 4px;
+    top: 1px;
+    background-position: -105px -12px;
+}
+
+table.poll tr.participation.threeLevel td.ymo {
+    background-color: #d1f3d1;
+}
+
+table.poll tr.participation.threeLevel td.imo {
+    background-color: #ffeea6;
+}
+
+table.poll tr.participation.threeLevel td.nmo {
+    background-color: #ffcfcd;
+}
+
+table.poll tr.participation.threeLevel td.y {
+    background-color: #d1f3d1;
+}
+
+table.poll tr.participation.threeLevel td.i {
+    background-color: #ffeea6;
+}
+
+table.poll tr.participation.threeLevel td.n {
+    background-color: #ffcfcd;
+}
+
+table.poll tr.participation a {
+    display: block;
+    padding: 2px 10px;
+    text-decoration: none;
+    outline: none;
+}
+
+table.poll tr.participation a:hover {
+    text-decoration: underline;
+}
+
+table.poll tr.participation td.y a.y, table.poll tr.participation td.i a.i, table.poll tr.participation td.n a.n {
+    text-decoration: underline;
+    color: #323232;
+}
+
+table.poll tr.participation td.pname {
+    text-align: left;
+    background: url('doodlesprite.png') -15px -302px no-repeat white;
+}
+
+table.poll tr.participation.inEdit td.pname {
+    background: url('doodlesprite.png') -15px -332px no-repeat white;
+}
+
+table.poll tr.participation.threeLevel td.pname {
+    border-bottom: 26px solid #fff;
+    padding: 0 2px 0 0;
+}
+
+table.poll tr.participation td {
+    line-height: 12px;
+}
+
+table.poll tr.participation td.pname input {
+    margin: 3px 0 3px 9px;
+    width: 116px;
+    height: 20px;
+    line-height: 20px;
+    padding-left: 9px;
+}
+
+table.poll tr.participation td.pname input.long {
+    margin: 3px 0 3px 3px;
+    width: 146px;
+    padding-left: 9px;
+}
+
+/* participation table - sums row */
+table.poll tr.sums td {
+    text-align: center;
+    line-height: 16px;
+    padding-left: 5px;
+    padding-right: 8px;
+    padding-top: 5px;
+    color: #6f6f6f;
+}
+
+table.poll tr.sums td.max {
+    font-weight: bold;
+}
+
+table.poll tr.sums td.sep {
+    min-width: 3px;
+}
+
+table.poll tr.sums td.nonHeader {
+    text-align: right;
+    padding-right: 10px;
+}
+
+/* participation table - inline editing */
+.inlineEdit {
+    background: url("doodlesprite.png") no-repeat scroll 0 -332px transparent;
+    width: 50px;
+    height: 30px;
+    position: absolute;
+    left: -12px;
+    display: none;
+}
+
+tr.partMyself .inlineEdit {
+    display: block;
+    background: url("doodlesprite.png") no-repeat scroll 0 -302px transparent;
+}
+
+tr.partMyself .inlineEdit:hover, .inlineEdit.active.hover {
+    background: url("doodlesprite.png") no-repeat scroll 0 -332px transparent;
+}
+
+table.poll tr.participation .inlineEdit > a, .inlineEdit > a {
+    margin: 7px 3px 0;
+    padding: 0px;
+}
+
+.inlineEdit.partLocked {
+    background: url("doodlesprite.png") no-repeat scroll 0 -332px transparent;
+    height: 30px;
+    left: 8px;
+    width: 30px;
+}
+
+.inlineLockedIcon {
+    background: url("doodlesprite.png") no-repeat scroll -128px -27px transparent;
+    width: 16px;
+    margin: 7px 0 0 9px;
+    height: 16px;
+    float: right;
+}
+
+.inlineEditIcon {
+    background: url("doodlesprite.png") no-repeat scroll -144px -27px transparent;
+    width: 16px;
+    height: 16px;
+    float: right;
+}
+
+.inEdit .inlineEditIcon {
+    background: url("doodlesprite.png") no-repeat scroll -160px -27px transparent;
+}
+
+.inlineEdit.active {
+    display: block;
+    background: url("doodlesprite.png") no-repeat scroll 0 -332px transparent;
+}
+
+.participation .inlineEdit.active {
+    left: -12px;
+}
+
+.inEdit .inlineEdit.active.hover {
+    background-position: 0 -332px;
+}
+
+.inlineEditIcon:hover {
+    background: url("doodlesprite.png") no-repeat scroll -160px -27px transparent;
+}
+
+.partTableCell > img {
+    position: absolute;
+    clip: rect(-1px -1px -1px -1px);
+}
+
+.partTableCell.h {
+    background: url('doodlesprite.png') no-repeat scroll -128px -27px transparent;
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+}
+
+.partTableCell.pn {
+    /* nothing its empty when no */
+}
+
+.partTableCell.pok {
+    background: url('doodlesprite.png') no-repeat scroll -44px -98px transparent;
+    display: inline-block;
+    width: 22px;
+    height: 18px;
+}
+
+.partTableCell.pi {
+    background: url('doodlesprite.png') no-repeat scroll 0 -98px transparent;
+    display: inline-block;
+    width: 22px;
+    height: 18px;
+}
+
+.partTableCell.pog {
+    background: url('doodlesprite.png') no-repeat scroll -88px -98px transparent;
+    display: inline-block;
+    width: 22px;
+    height: 18px;
+}
+
+.partTableCell.pokg {
+    background: url('doodlesprite.png') no-repeat scroll -66px -98px transparent;
+    display: inline-block;
+    width: 22px;
+    height: 18px;
+}
+
+.partTableCell.pig {
+    background: url('doodlesprite.png') no-repeat scroll -22px -98px transparent;
+    display: inline-block;
+    width: 22px;
+    height: 18px;
+}
+
+.inlineDeleteIcon {
+    background: url("doodlesprite.png") no-repeat scroll -176px -27px transparent;
+    height: 16px;
+    width: 16px;
+    float: right;
+}
+
+.inlineDeleteIcon:hover {
+    background: url("doodlesprite.png") no-repeat scroll -192px -27px transparent;
+}
+
+.inEditFnc > td {
+    text-align: right;
+}
+
+.inEditFnc > td > input {
+    margin: 15px 10px;
+}
+
+#belowTable {
+    text-align: right;
+}
+
+.targetCalendarContainer {
+    margin-right: 10px;
+}
+
+#calendarView {
+    padding: 0 7px;
+    min-height: 580px;
+    padding-bottom: 15px;
+}
+
+/* COMMENTS */
+#cmtsContainer {
+    background-color: #f0f0f0;
+    border-top: 1px #d6d6d6 solid;
+    padding-top: 5px;
+    padding-bottom: 40px;
+    font-size: 12px;
+    line-height: 15px;
+}
+
+#cmtsPart {
+    max-width: 802px;
+}
+
+#cmtTitle {
+    margin: 20px 0 4px 0;
+}
+
+.cmtsLink {
+    margin-bottom: 4px;
+}
+
+#cmtsAdd .avatarSmall {
+    display: inline;
+    float: left;
+    margin-top: 13px;
+}
+
+#formError {
+    margin-top: 0;
+}
+
+#cmtsAdd {
+    margin-bottom: 10px;
+    overflow: auto;
+}
+
+#cmtAddArrow {
+    float: left;
+}
+
+#cmts {
+    padding-top: 13px;
+    width: 766px;
+}
+
+.cmt {
+    clear: both;
+    padding-bottom: 22px;
+    overflow: auto;
+}
+
+.cmtAvatar {
+    float: left;
+}
+
+.cmtCmt {
+    margin-left: 38px;
+    word-wrap: break-word;
+}
+
+.cmtDetails {
+    margin-left: 33px;
+    margin-top: 3px;
+    color: #989898;
+}
+
+.cmtDetails > * {
+    float: left;
+    display: block;
+    padding: 0 5px;
+}
+
+.cmtForm {
+    display: inline;
+    float: left;
+    overflow: auto;
+    padding-top: 13px;
+    padding-left: 8px;
+}
+
+.cmtForm > * {
+    clear: both;
+    float: left;
+    margin-bottom: 10px;
+}
+
+.lastCmt {
+    padding-bottom: 0px;
+}
+
+.newCmtator, .newCmt {
+    border: 1px #d6d6d6 solid;
+    padding: 6px;
+}
+
+.follow > input {
+    margin-right: 10px;
+}
+
+.newCmt {
+    width: 500px;
+    height: 60px;
+    padding-bottom: 8px;
+    color: #464646;
+}
+
+.hiddenHint {
+    margin-bottom: 15px;
+}
+
+#countCmt {
+    padding-left: 5px;
+    vertical-align: top;
+    color: #6f6f6f;
+}
+
+/* misc */
+.partIcon {
+    background: url('doodlesprite.png') 0 0 no-repeat;
+}
+
+.timeIcon {
+    background: url('doodlesprite.png') -12px 0 no-repeat;
+}
+
+.lockedIcon {
+    background: url('doodlesprite.png') -72px 0 no-repeat;
+}
+
+.avatarSmall {
+    width: 24px;
+    height: 30px;
+    background-repeat: no-repeat;
+    background-position: 0 -272px;
+    background-image: url('doodlesprite.png');
+}
+
+/* HEADER */
+#pollHeader {
+    background-color: #f0f0f0;
+    padding-top: 18px;
+    padding-bottom: 34px;
+    right: auto;
+}
+
+#pollDetails > * {
+    float: left;
+    display: block;
+    padding: 0 5px;
+}
+
+#pollDetails > p {
+    padding-left: 0;
+}
+
+#pollDetails > div > * {
+    float: left;
+}
+
+#pollInfos {
+    float: left;
+    word-wrap: break-word;
+}
+
+#pollInfos.withAvatar {
+    max-width: 664px;
+}
+
+#pollInfos #pollDetails {
+    padding-top: 6px;
+}
+
+#pollInfos > div {
+    clear: both;
+}
+
+#pollDetails { /*padding-top: 5px;*/
+}
+
+#pollLocation { /*padding-top: 20px;*/
+    font-size: 15px;
+}
+
+#pollDescription {
+    clear: both;
+    font-size: 15px;
+    line-height: 20px;
+}
+
+#anonymousHeader {
+    min-height: 40px;
+}
+
+#anonymousHeader .info {
+    color: #6f6f6f;
+    padding-bottom: 14px;
+    width: 766px;
+}
+
+#anonymousHeader .greenh3 {
+    padding-top: 25px;
+}
+
+/* NOTIFICATION PAGE */
+#nags .nag {
+    padding-bottom: 58px;
+}
+
+#nags h3 {
+    color: #0066DD;
+}
+
+/* Administration Tab */
+#adminView {
+    display: none;
+}
+
+#pollInformation {
+    margin-bottom: 14px;
+}
+
+.infoBox > p > div {
+    width: 766px;
+}
+
+.infoBox {
+    padding: 15px 0;
+}
+
+#adminCont .closePoll {
+    background-position: -200px -78px;
+}
+
+#adminCont .reopenPoll {
+    background-position: -220px -78px;
+}
+
+#adminCont .historyPoll {
+    background-position: 0 -78px;
+}
+
+#adminCont .inviteParts {
+    background-position: -100px -78px;
+}
+
+#adminCont .deleteParts {
+    background-position: -20px -78px;
+}
+
+#adminCont .deleteCmts {
+    background-position: -120px -78px;
+}
+
+#adminCont .exportPrint {
+    background-position: -180px -78px;
+}
+
+#adminCont .exportExcel {
+    background-position: -140px -78px;
+}
+
+#adminCont .exportPdf {
+    background-position: -40px -78px;
+}
+
+#tabPrint {
+    background: url('doodlesprite.png') no-repeat -180px -78px transparent;
+    height: 20px;
+    width: 20px;
+    float: left;
+    margin: 8px;
+}
+
+#textPrint {
+    background: url('doodlesprite.png') no-repeat -180px -78px transparent;
+    height: 20px;
+    width: 20px;
+    float: left;
+    margin-top: 42px;
+    margin-bottom: -32px;
+}
+
+#pollDescription.isIE7 {
+    padding-top: 0;
+}
+
+#textPrint.isIE7 {
+    margin-top: 10px;
+    margin-bottom: 0;
+}
+
+#pname.isIE7 {
+	margin-top: 2px;
+	margin-bottom: 2px;
+}
+
+#participantName.isIE7 {
+	padding: 0;
+}
+
+.isIE7 #suggest {
+	width: 140px;
+}
+
+.isIE7 #calSave {
+	width: 90px;
+}
+
+/* admin - Invite */
+#inviteContact {
+    background-color: #edf4fe;
+}
+
+#initiatorParticipates {
+    margin-right: 10px;
+}
+
+#newInvitees {
+    margin: 10px 0 3px 0;
+}
+
+.buttonBar input {
+    margin-right: 10px;
+}
+
+/* admin - close */
+#inlineCloseHeader {
+    margin: 0 0 5px 184px;
+}
+
+#inlineCloseHeader .text {
+    font-weight: bold;
+}
+
+#inlineCloseHeader .spacer {
+    color: #6f6f6f;
+}
+
+.inlineClosePoll {
+    height: 32px;
+    text-align: center;
+}
+
+.inlineCloseFkt > td > input {
+    margin: 15px 10px;
+}
+
+.inlineCloseFkt .inlineCloseButtons {
+    text-align: right;
+}
+
+table.poll tr.participant td.y.nonFinal {
+    background-color: #d6d6d6;
+}
+
+table.poll tr.participant td.i.nonFinal {
+    background-color: #d6d6d6;
+}
+
+table.poll tr.participant td.n.nonFinal {
+    background-color: #eaeaea;
+}
+
+table.poll td.inlineClosePoll:hover {
+    background-color: #eaeaea;
+}
+
+table.poll tr.sums td.final {
+    color: #5cad5c;
+}
+
+#newHistory {
+    font-size: 12px;
+    width: 100%;
+}
+
+#newHistory th {
+    font-weight: bold;
+}
+
+#newHistory td, #newHistory th {
+    border: 1px #b7b7b7 solid;
+    padding: 4px;
+}
+
+#extraFldForm > .formPanel > div > * {
+    display: block;
+    width: 350px;
+}
+
+#extraFldForm label {
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 14px; /* 1.2 times font-size */
+    padding-bottom: 3px;
+    padding-top: 14px;
+}
+
+#finalPicks li {
+    background: url('../../graphics/common/verticalsprite.png') no-repeat 0 -541px;
+    padding-left: 17px;
+    margin-top: 5px;
+    font-weight: bold;
+}
+
+#finalPicks li span {
+    font-weight: normal;
+}
+
+table.poll tr.participant.endAccordeon td.asep {
+    background: url("horizontalsprite.png") no-repeat scroll -72px bottom transparent;
+}
+
+#nameDiv .pname {
+    min-width: 182px;
+    width: 182px;
+    border-top: 1px solid #fff;
+    border-bottom: 2px solid #fff;
+    background: url('doodlesprite.png') -15px -302px no-repeat white;
+    padding: 0 2px 0 0;
+}
+
+#nameDiv .pname div {
+    float: left;
+}
+
+#nameDiv .pname.partMyself {
+    background: url('doodlesprite.png') -15px -392px no-repeat white;
+}
+
+#nameDiv .pname input {
+    height: 20px;
+    line-height: 20px;
+    margin: 3px 0 3px 9px;
+    padding-left: 9px;
+    width: 116px;
+}
+
+#nameDiv .pname input.long {
+    margin: 3px 0 3px 3px;
+    width: 146px;
+    padding-left: 9px;
+}
+
+.targetCalNag {
+    text-align: right;
+}
+
+#notificationsCont input {
+    margin-right: 10px;
+}
+
+.textPoll th, .textPoll .foot td {
+    max-width: 94px;
+}
+
+.textPoll th p, .textPoll .foot td p {
+    max-width: 94px;
+    word-wrap: break-word;
+    -ms-word-wrap: break-word;
+}
+
+.maxWidthForIE {
+    width: 94px;
+}
+
+/*
+ tr.participation {
+ height: 31px;
+ }
+ 
+ tr.participant {
+ height: 31px;
+ }
+ 
+ #pname {
+ position: absolute;
+ }
+ 
+ table.poll tr.participation td.pname {
+ position: absolute;
+ height: 30px;
+ }*/
+/* Calendar Ads - In table */
+table.poll tr.header.adsRow {
+    background: url('../../graphics/polls/tick11.png') 184px 0 repeat-y;
+}
+
+table.poll tr.header.adsRow th {
+    padding: 1px 1px 2px;
+}
+
+table.poll tr.header.adsRow th.msep {
+    background: url('../../graphics/polls/tick53r.png') right 0 repeat-y;
+    padding-right: 6px;
+    /* background-position: right 0; */
+}
+
+table.poll tr.header.adsRow th.dsep {
+    background: url('../../graphics/polls/tick33r.png') right 0 repeat-y;
+    padding-right: 4px;
+}
+
+table.poll tr.header.adsRow th.rsep {
+    background: url('../../graphics/polls/tick11.png') right 0 repeat-y;
+}
+
+table.poll tr.header.adsRow th.first {
+    padding-left: 2px;
+}
+
+table.poll tr.header.adsRow th.last {
+    padding-right: 2px;
+}
+
+.calendarAd {
+    background: #323232;
+    height: 32px;
+}
+
+.calendarAd .adLabel {
+    color: #b7b7b7;
+    font-size: 9px;
+    line-height: 12px;
+    padding: 2px 4px 0 4px;
+}
+
+.calendarAd .adTitle {
+    color: #ffffff;
+    font-size: 11px;
+    line-height: 16px;
+    padding: 0 4px;
+}
+
+.calendarAd .adTitle.adTitleSingle {
+    line-height: 16px;
+    padding: 16px 4px 0 4px;
+}
+
+.selectedDate.part .r {
+    width: 0;
+	cursor: default;
+}
+
+.selectedDate.part .l .icon {
+	background-position: -180px -12px;
+}
+
+.selectedDate.part.yes .l .icon {
+    background-position: -210px -12px;
+}
+
+.selectedDate.part.no .l .icon {
+    background-position: -255px -12px;
+}
+
+.selectedDate.part.ifNeedBe .l .icon {
+    background-position: -240px -12px;
+}
+
+.selectedDate.part.disabled.final .l .icon {
+    background-position: -210px -12px;
+}
+
+.selectedDate.part.disabled.nonFinal .l .icon {
+    background-position: -225px -12px;
+}

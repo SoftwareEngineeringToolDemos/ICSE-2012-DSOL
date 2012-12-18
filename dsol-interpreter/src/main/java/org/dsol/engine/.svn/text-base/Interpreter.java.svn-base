@@ -1,0 +1,236 @@
+package org.dsol.engine;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
+
+import org.dsol.ConcreteAction;
+import org.dsol.Instance;
+import org.dsol.exception.ActionException;
+import org.dsol.exception.InstanceUpdatedException;
+import org.dsol.planner.api.AbstractAction;
+import org.dsol.planner.api.Plan;
+import org.dsol.planner.api.PlanResult;
+
+public class Interpreter{
+	
+	private Logger logger = Logger.getLogger(Interpreter.class.getName());
+	private Map<AbstractAction, ConcreteAction> executedActions;
+	
+	private final Instance instance;
+
+	public Interpreter() {
+		instance = null;
+	}
+	
+	public Interpreter(	Instance instance){
+		
+		this.instance = instance;
+	}	
+	
+	public boolean executeService() throws Throwable{
+		
+		executedActions = new HashMap<AbstractAction, ConcreteAction>();
+		
+        boolean success = false;
+        
+        Plan plan = null;
+        Plan lastPlan = null;
+        AbstractAction lastTriedStep = null;
+        
+        boolean containsNextGoal = true;
+		while (!success && containsNextGoal) {
+			PlanResult planResult = instance.plan();
+			if (planResult.planFound()) {
+				plan = planResult.getPlan();
+				
+				if (lastPlan != null) {
+					adjustPlans(plan, lastPlan, lastTriedStep);
+					compensate(lastPlan);
+				}				
+
+				try {
+					printPlan(plan);
+					executePlan(plan);
+					success = true;
+				} 
+				catch (InstanceUpdatedException e) {
+					//save last plan and go to re-planning phase!
+					lastPlan = plan;
+					lastTriedStep = e.getAbstractAction();
+					instance.updateRead();
+				}
+				catch (ActionException actionException) {
+					actionException.printStackTrace();
+					lastTriedStep = actionException.getAbstractAction();
+					lastPlan = plan;
+					instance.removeOperation(lastTriedStep);
+				}
+			}
+			else{
+				containsNextGoal = instance.tryNextGoal();	
+			}			
+		}
+		
+		if (!success) {
+			if(plan != null){
+				compensateAllExecutedActions(plan);
+			}
+		}
+		return success;
+	}
+	
+	protected void adjustPlans(	Plan newPlan, 
+								Plan oldPlan, 
+								AbstractAction lastTriedStep){
+
+		AbstractAction newPlanStep;
+		AbstractAction oldPlanStep;
+		
+		int faultyActionIndex = oldPlan.getActionIndex(lastTriedStep);
+		
+		for (int i = 0; i < faultyActionIndex; i++) {
+			oldPlanStep = oldPlan.get(i);
+			newPlanStep = newPlan.get(i);
+			
+			if(oldPlanStep.equals(newPlanStep)){
+				newPlanStep.markAsExecuted();
+			}
+			else{
+				oldPlanStep.markForCompensation();
+			}
+		}	
+	}
+	
+	private void compensateAllExecutedActions(Plan plan){
+		for(int i = 0;i < plan.size();i++){
+			AbstractAction step = plan.get(i);
+			if(step.isExecuted()){
+				step.markForCompensation();
+			}
+		}
+		compensate(plan);	
+
+	}
+	
+	/**
+	 * This method is used to compensate an executed plan, from the point that
+	 * the new plan diverge from this plan until the faulty operation
+	 * @param plan
+	 * @param from
+	 * @param faultyOperation
+	 * @throws InvocationTargetException 
+	 * @throws IllegalAccessException 
+	 * @throws IllegalArgumentException 
+	 */
+	private void compensate(final Plan plan){
+		for (int i = plan.size() - 1; i >= 0; i--) {
+			AbstractAction step = plan.get(i);
+			if (step.isMarkedForCompensation()) {
+				try {
+					compensateExecutedStepOfThePlan(step);
+				} catch (Throwable ex) {
+					// TODO: What to do when errors occurs while compensating
+					// actions?????
+					ex.printStackTrace();
+					System.out.println("Error while compensating operation " + step);
+				}
+			}
+		}
+	}
+	
+	protected void executePlan(Plan plan) throws ActionException, Throwable {
+		
+		for (AbstractAction step : plan.getSteps()) {
+			
+			//If the current step represents a seam action or
+			//if the step was already executed in a previous plan (this will happen in the case when 
+			//the plan of execution was re-planned and the new plan contain actions in common with
+			//the previous one) this action can be "skipped".
+			if(step.isSeam() || step.isExecuted()) continue;
+			
+			try {
+				if(instance.wasUpdated()){
+					throw new InstanceUpdatedException(step);
+				}
+				executeAction(step);
+				step.markAsExecuted();
+				//monitor.addSuccessRequest(step.getName());
+			} catch (Throwable e) {
+				throw new ActionException(step, e);
+			}
+		}
+	}
+	
+	
+	private void executeAction(	AbstractAction action ) throws Throwable{
+		List<String> params = action.getParamList();
+		List<ConcreteAction> concreteActions = instance.getConcreteActions(action, params);
+		if (concreteActions.isEmpty()) {
+			throw new RuntimeException(
+					"No concrete action found for the execution of step "
+							+ action);
+		}
+		
+		
+		boolean executedSuccessfully = false;
+		for (ConcreteAction concreteAction : concreteActions) {
+			logger.info("Executing concrete action: " + concreteAction);
+			executedSuccessfully = concreteAction.execute(instance.getInstanceSession(), params);
+			if (executedSuccessfully) {
+				executedActions.put(action, concreteAction);
+				return;
+			}
+		}
+		throw new RuntimeException(
+				"All concrete action found for the execution of step "
+						+ action + " are faulty!");
+	}
+	
+	private void compensateExecutedStepOfThePlan(AbstractAction step) throws Throwable {
+		
+		ConcreteAction executedConcreteAction = executedActions.remove(step);
+		executeCompensationAction(step, instance.getCompensationActions(executedConcreteAction));
+	
+	}
+	
+	private void executeCompensationAction(	AbstractAction actionToCompensate,
+											List<ConcreteAction> concreteActions) throws Throwable {
+
+		if(concreteActions.isEmpty()){
+			logger.info("Compensation was not defined to "+actionToCompensate);
+			return;
+		}
+		
+		List<String> params = actionToCompensate.getParamList();
+		boolean executedSuccessfully = false;
+		for (ConcreteAction concreteAction : concreteActions) {
+			// logger.info("Executing compensation action: " + concreteAction);
+			executedSuccessfully = concreteAction.execute(instance.getInstanceSession(),params);
+			if (executedSuccessfully) {
+				return;
+			}
+		}
+		throw new RuntimeException(
+				"All concrete action found for the execution of step "
+						+ actionToCompensate + " are faulty!");
+	}
+	
+    private void printPlan(Plan plan){
+    	StringBuffer buffer = new StringBuffer();
+        buffer.append("\n/*************** PLAN ***************/\n");
+        
+        for(AbstractAction action:plan.getSteps()){
+        	if(!action.isSeam()){
+        		buffer.append(action);	
+        		buffer.append("\n");	
+        	}
+        }
+        
+        buffer.append("/***********************************/\n");
+        
+        logger.info(buffer.toString());
+        
+    }
+}

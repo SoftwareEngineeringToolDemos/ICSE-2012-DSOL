@@ -1,0 +1,1 @@
+goal(poll(translatedPoll), language(translatedPoll, desiredLanguage))

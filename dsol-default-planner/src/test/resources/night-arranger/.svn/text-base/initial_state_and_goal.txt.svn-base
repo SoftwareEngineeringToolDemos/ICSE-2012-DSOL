@@ -1,0 +1,5 @@
+start(
+	searchLocation(userDefinedLocation)
+)
+
+goal(place_suggestions, max(reliability))

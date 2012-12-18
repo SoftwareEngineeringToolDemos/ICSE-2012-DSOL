@@ -1,0 +1,19 @@
+action getPoll(Id)
+pre: pollId(Id)
+post: poll(requestedPoll)
+
+action translatePoll(Poll, PollLanguage, ToLanguage)
+pre: poll(Poll), language(Poll, PollLanguage), language(ToLanguage)
+post: poll(translatedPoll), language(translatedPoll, ToLanguage)
+
+action detectLanguage(Text)
+pre: text(Text) 
+post: language(Text,detectedLanguage)
+
+seam action getText
+pre: poll(requestedPoll)
+post: text(requestedPoll.title)
+
+seam action getPollLanguage(Language)
+pre: language(requestedPoll.title, Language)
+post: language(requestedPoll, Language)

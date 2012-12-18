@@ -1,0 +1,12 @@
+action test
+pre: a
+post: b
+
+action testRel
+pre: b
+post: c
+
+action testDisabled
+pre: b
+post: d
+enabled: false

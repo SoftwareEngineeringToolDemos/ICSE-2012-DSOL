@@ -1,0 +1,99 @@
+import graphplan.Graphplan;
+import graphplan.domain.DomainDescription;
+import graphplan.domain.Operator;
+import graphplan.domain.Proposition;
+import graphplan.domain.jason.PropositionImpl;
+import graphplan.flyweight.OperatorFactoryException;
+import graphplan.graph.PlanningGraphException;
+import graphplan.parser.ParseException;
+import graphplan.parser.PlannerParser;
+
+import java.util.List;
+
+import junit.framework.Assert;
+
+import org.junit.Test;
+
+
+public class PlannerParserTest {
+	
+	@Test
+	public void testParser() throws ParseException{
+		PlannerParser parser = new PlannerParser();
+		List<Operator> operators = parser.parseOperators(this.getClass().getResourceAsStream("/operators.txt"));
+	
+		Assert.assertEquals(3,operators.size());
+		
+		Operator operator1 = operators.get(0);
+		Assert.assertEquals("test",operator1.getFunctor());
+		Assert.assertEquals(0,operator1.getTerms().size());
+		
+		List<Proposition> preconds = operator1.getPreconds();
+		Assert.assertEquals(1, preconds.size());
+		Assert.assertEquals("a", preconds.get(0).getFunctor());
+
+		List<Proposition> postconds = operator1.getEffects();
+		Assert.assertEquals(1, postconds.size());
+		Assert.assertEquals("b", postconds.get(0).getFunctor());
+
+		
+		Assert.assertTrue(operator1.isEnabled());
+		
+		Operator operator2 = operators.get(1);
+		Assert.assertEquals("testRel",operator2.getFunctor());
+		Assert.assertEquals(0,operator2.getTerms().size());
+		
+		preconds = operator2.getPreconds();
+		Assert.assertEquals(1, preconds.size());
+		Assert.assertEquals("b", preconds.get(0).getFunctor());
+
+		postconds = operator2.getEffects();
+		Assert.assertEquals(1, postconds.size());
+		Assert.assertEquals("c", postconds.get(0).getFunctor());		
+		
+		Assert.assertTrue(operator2.isEnabled());
+		
+		Operator operator3 = operators.get(2);
+		Assert.assertEquals("testDisabled",operator3.getFunctor());
+		Assert.assertEquals(0,operator3.getTerms().size());
+		
+		preconds = operator3.getPreconds();
+		Assert.assertEquals(1, preconds.size());
+		Assert.assertEquals("b", preconds.get(0).getFunctor());
+
+		postconds = operator3.getEffects();
+		Assert.assertEquals(1, postconds.size());
+		Assert.assertEquals("d", postconds.get(0).getFunctor());
+		
+		Assert.assertFalse(operator3.isEnabled());
+	}
+	
+	@Test
+	public void plan() throws ParseException, PlanningGraphException, OperatorFactoryException{
+		PlannerParser parser = new PlannerParser();
+		DomainDescription domain = parser.parseProblem(this.getClass().getResourceAsStream("/operators.txt"), this.getClass().getResourceAsStream("/facts.txt"));
+		
+		Graphplan graphplan = new Graphplan();
+		graphplan.plan(domain);
+		
+		
+		List<Proposition> goalState = domain.getGoalState();
+		goalState.clear();
+		goalState.add(new PropositionImpl("d"));
+		
+		try{
+			graphplan.plan(domain);
+			Assert.fail();
+		}
+		catch(Exception ex){}
+		
+		List<Operator> operators = domain.getOperators();
+		for(Operator op:operators){
+			op.enable();
+		}
+		
+		graphplan.plan(domain);
+		
+	}
+
+}

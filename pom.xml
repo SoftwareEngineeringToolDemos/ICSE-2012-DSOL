@@ -1,0 +1,25 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.dsol</groupId>
+	<artifactId>dsol</artifactId>
+	<version>0.2-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>DSOL - Declarative Service Orchestration Language</name>
+
+	<repositories>
+		<repository>
+			<id>dsol-repo</id>
+			<url>http://dsol-maven.appspot.com/</url>
+		</repository>
+	</repositories>
+
+	<modules>
+		<module>dsol-annotations</module>
+		<module>dsol-default-planner</module>
+		<module>dsol-planner-plugin-api</module>
+		<module>dsol-default-planner-plugin-impl</module>
+		<module>dsol-interpreter</module>
+	</modules>
+
+</project>

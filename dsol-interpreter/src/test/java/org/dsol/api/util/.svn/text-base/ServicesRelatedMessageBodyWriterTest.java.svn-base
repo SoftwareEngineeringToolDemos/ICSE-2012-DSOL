@@ -1,0 +1,77 @@
+package org.dsol.api.util;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import javax.ws.rs.WebApplicationException;
+
+import junit.framework.Assert;
+
+import org.dsol.service.config.Service;
+import org.dsol.service.config.Services;
+import org.junit.Test;
+
+
+public class ServicesRelatedMessageBodyWriterTest {
+
+	@Test
+	public void testWriteToServices() throws WebApplicationException, IOException{
+		ServicesRelatedMessageBodyWriter writer = new ServicesRelatedMessageBodyWriter();
+		
+		Service serviceInfo = Service.createSoapService("id", "name", null,null,null,null,null);		
+		Service serviceInfo2 = Service.createSoapService("id2", "name", null,null,null,null,null);
+		
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		
+		Services servicesInfo = new Services();
+		servicesInfo.addService(serviceInfo);
+		servicesInfo.addService(serviceInfo2);
+		
+		writer.writeTo(servicesInfo, null, null, null, null, null, output);
+		
+		Assert.assertEquals("{\"services_name\":\"name\",\"services\":[{\"id\":\"id\",\"name\":\"name\",\"type\":\"soap\",\"additional_parameters\":[]},{\"id\":\"id2\",\"name\":\"name\",\"type\":\"soap\",\"additional_parameters\":[]}]}",new String(output.toByteArray()));
+
+	}
+	
+	
+	@Test
+	public void testWriteToSeveralServices() throws WebApplicationException, IOException{
+		ServicesRelatedMessageBodyWriter writer = new ServicesRelatedMessageBodyWriter();
+	
+		Service serviceInfo = Service.createSoapService("id", "name", null,null,null,null,null);		
+		Service serviceInfo2 = Service.createSoapService("id2", "name2", null,null,null,null,null);
+		
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		
+		Services servicesInfo = new Services();
+		servicesInfo.addService(serviceInfo);
+		
+		Services servicesInfo2 = new Services();
+		servicesInfo2.addService(serviceInfo2);
+
+		Services servicesInfo3 = new Services();
+		servicesInfo3.addServices(servicesInfo);
+		servicesInfo3.addServices(servicesInfo2);
+		
+		writer.writeTo(servicesInfo3, null, null, null, null, null, output);
+		
+		Assert.assertEquals("{\"services_list\":[{\"services_name\":\"name\",\"services\":[{\"id\":\"id\",\"name\":\"name\",\"type\":\"soap\",\"additional_parameters\":[]}]},{\"services_name\":\"name2\",\"services\":[{\"id\":\"id2\",\"name\":\"name2\",\"type\":\"soap\",\"additional_parameters\":[]}]}]}",new String(output.toByteArray()));
+
+	}
+	
+	@Test
+	public void testWriteToService() throws WebApplicationException, IOException {
+		
+		ServicesRelatedMessageBodyWriter writer = new ServicesRelatedMessageBodyWriter();
+		
+		Service serviceInfo = Service.createSoapService("id", "name", null,null,null,null,null);
+		
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		
+		writer.writeTo(serviceInfo, null, null, null, null, null, output);
+		
+		Assert.assertEquals("{\"id\":\"id\",\"name\":\"name\",\"type\":\"soap\",\"additional_parameters\":[]}",new String(output.toByteArray()));
+
+	}
+
+}

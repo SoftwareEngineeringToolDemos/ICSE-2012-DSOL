@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<services>
+				
+	<service 	name="poll"
+				id="getDoodle"
+				type="rest"
+				url="http://doodle-test.com/api1WithoutAccessControl/polls/#{pollId}"
+				method="GET"
+				mediaType="application/xml"/>
+
+ 	<service 	name="languageDetector"
+				id="microsoftLanguageDetector"
+				type="soap"
+				wsdl="http://api.microsofttranslator.com/V2/Soap.svc"
+				operationNamespaceUri="http://api.microsofttranslator.com/V2"
+				operation="Detect">
+	
+		<additional-parameter at-index="0" name="bingAPIKey" value="#{bingAPIKey}"/>
+		
+	</service>
+				
+	<service 	name="translator"
+				id="microsoftLanguageTranslator"
+				type="soap"
+				wsdl="http://api.microsofttranslator.com/V2/Soap.svc"
+				operationNamespaceUri="http://api.microsofttranslator.com/V2"
+				operation="Translate">
+				
+		<additional-parameter at-index="0" name="bingAPIKey" value="#{bingAPIKey}"/>
+		
+	</service>
+</services>

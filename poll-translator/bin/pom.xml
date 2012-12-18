@@ -1,0 +1,126 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.dsol</groupId>
+		<artifactId>dsol-parent</artifactId>
+		<version>1-SNAPSHOT</version>
+		<relativePath>../dsol/dsol-parent/pom.xml</relativePath>
+	</parent>
+
+	<groupId>org.dsol.project</groupId>
+	<artifactId>poll-translator</artifactId>
+	<version>0.1-SNAPSHOT</version>
+
+	<properties>
+		<dsol.version>0.1-SNAPSHOT</dsol.version>
+	</properties>
+
+	<repositories>
+		<repository>
+			<id>dsol.internal</id>
+			<url>http://maven.dsol-lang.net:8080/archiva/repository/internal/</url>
+		</repository>
+		<repository>
+			<id>dsol.snapshots</id>
+			<url>http://maven.dsol-lang.net:8080/archiva/repository/snapshots/</url>
+		</repository>
+	</repositories>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.dsol</groupId>
+			<artifactId>dsol-interpreter</artifactId>
+			<version>${dsol.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.dsol</groupId>
+			<artifactId>dsol-default-planner-plugin-impl</artifactId>
+			<version>${dsol.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-transports-http-jetty</artifactId>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.1</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>java</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<mainClass>org.dsol.engine.DSOLServer</mainClass>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.thoughtworks.paranamer</groupId>
+				<artifactId>paranamer-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>run</id>  <!-- id is optional -->
+						<configuration>
+							<sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+							<outputDirectory>${project.build.outputDirectory}</outputDirectory>
+						</configuration>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											com.thoughtworks.paranamer
+										</groupId>
+										<artifactId>
+											paranamer-maven-plugin
+										</artifactId>
+										<versionRange>
+											[2.3,)
+										</versionRange>
+										<goals>
+											<goal>generate</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<execute />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+</project>

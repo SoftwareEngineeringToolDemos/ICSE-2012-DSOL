@@ -1,0 +1,32 @@
+import graphplan.Graphplan;
+import graphplan.domain.DomainDescription;
+import graphplan.domain.qos.ProductQoSAggregator;
+import graphplan.flyweight.OperatorFactoryException;
+import graphplan.graph.PlanningGraphException;
+import graphplan.parser.ParseException;
+import graphplan.parser.PlannerParser;
+
+import org.junit.Test;
+
+
+public class DoodleMap {
+	
+	@Test
+	public void plan() throws ParseException, PlanningGraphException, OperatorFactoryException{
+		PlannerParser parser = new PlannerParser();
+		
+		DomainDescription domain = parser.parseProblem(	this.getClass().getResourceAsStream("/doodle-map/actions.txt"), 
+														this.getClass().getResourceAsStream("/doodle-map/initial_state_and_goal.txt"));
+
+		domain.addQosAggregator(new ProductQoSAggregator() {
+			@Override
+			public String getMetricName() {
+				return "accuracy";
+			}
+		});
+		
+		Graphplan graphplan = new Graphplan();
+		System.out.println(graphplan.plan(domain));	
+	}
+
+}

@@ -1,0 +1,39 @@
+package org.dsol.api.util;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+
+import javax.ws.rs.WebApplicationException;
+
+import org.dsol.service.config.Service;
+import org.junit.Assert;
+import org.junit.Test;
+
+public class ServiceInfoMessageBodyReaderTest {
+
+	@Test
+	public void testIsReadable() {
+		ServiceMessageBodyReader actionsMessageBodyReader = new ServiceMessageBodyReader();
+		Assert.assertTrue(actionsMessageBodyReader.isReadable(Service.class, null,null,null));
+	}
+	
+	@Test
+	public void testReadFrom() throws WebApplicationException, IOException {
+		ServiceMessageBodyReader serviceInfoMessageBodyReader = new ServiceMessageBodyReader();
+		
+		
+		String data = "{\"id\":\"id\",\"name\":\"name\",\"type\":\"soap\"}";
+		ByteArrayInputStream bis = new ByteArrayInputStream(data.getBytes());
+		
+		Service serviceInfo = serviceInfoMessageBodyReader.readFrom(null,null,null,null,null, bis);
+		
+		Assert.assertNotNull(serviceInfo);
+		Assert.assertEquals("id",serviceInfo.getId());
+		Assert.assertEquals("name",serviceInfo.getName());
+		Assert.assertEquals("soap",serviceInfo.getType());
+
+		
+
+	}
+
+}

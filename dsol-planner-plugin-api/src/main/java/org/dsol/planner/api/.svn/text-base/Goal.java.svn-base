@@ -1,0 +1,22 @@
+package org.dsol.planner.api;
+
+import java.util.ArrayList;
+
+public class Goal extends ArrayList<Fact>{
+	
+	@Override
+	public String toString() {
+		if(isEmpty()){
+			return "error: goal with no facts";
+		}
+		
+		StringBuilder asString = new StringBuilder("goal(");
+		for(Fact fact:this){
+			asString.append(fact.get());
+			asString.append(",");
+		}
+		asString.deleteCharAt(asString.length() - 1);
+		asString.append(")");
+		return asString.toString();
+	}
+}

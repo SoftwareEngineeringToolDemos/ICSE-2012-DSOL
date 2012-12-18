@@ -1,0 +1,288 @@
+/*
+ * ---------------------------------------------------------------------------
+ * Copyright (C) 2010  Felipe Meneguzzi
+ * JavaGP is distributed under LGPL. See file LGPL.txt in this directory.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ * To contact the author:
+ * http://www.meneguzzi.eu/felipe/contact.html
+ * ---------------------------------------------------------------------------
+ */
+package graphplan.domain;
+
+import graphplan.PlanResult;
+import graphplan.domain.qos.QoS;
+import graphplan.domain.qos.QoSAggregator;
+import graphplan.domain.qos.QoSMetric;
+import graphplan.domain.qos.QosBound;
+import graphplan.domain.qos.ReliabilityTimeQoSAggregator;
+import graphplan.domain.qos.ResponseTimeQoSAggregator;
+import jason.asSyntax.Term;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * The description of a planning problem, including the set of ground
+ * uninstantiated operators as well as the initial state and goal state.
+ * 
+ * @author Felipe Meneguzzi
+ * 
+ */
+public class DomainDescription {
+
+	protected List<Operator> operators;
+	protected List<Proposition> initialState;
+	protected List<Proposition> goalState;
+
+	// QoS Related part of the Domain
+	private static final String DESIRED_QOS = "desired";
+	private static final String MAX_QOS = "max";
+	private static final String MIN_QOS = "min";
+
+	protected List<QosBound> desiredValues = new ArrayList<QosBound>();
+	protected List<String> maxGuarantees = new ArrayList<String>();
+	protected List<String> minGuarantees = new ArrayList<String>();
+
+	protected Map<String, QoSAggregator> qoSAggregators = new HashMap<String, QoSAggregator>();
+
+	/**
+	 * Instantiate a domain description with the supplied
+	 * <code>initialState</code> and <code>goalState</code>.
+	 * 
+	 * @param initialState
+	 * @param goalState
+	 */
+	public DomainDescription(List<Proposition> initialState, List<Proposition> goalState) {
+		this.initialState = new ArrayList<Proposition>(initialState);
+		this.goalState = new ArrayList<Proposition>(goalState);
+		
+		qos();
+
+	}
+	
+	public void qos(){
+		setQoSGoals();
+		addQosAggregator(new ResponseTimeQoSAggregator());
+		addQosAggregator(new ReliabilityTimeQoSAggregator());
+	}
+
+	/**
+	 * Instantiate a domain description with the supplied <code>operators</code>
+	 * , <code>initialState</code> and <code>goalState</code>.
+	 * 
+	 * @param operators
+	 * @param initialState
+	 * @param goalState
+	 */
+	public DomainDescription(List<Operator> operators,
+			List<Proposition> initialState, List<Proposition> goalState) {
+
+		this(initialState, goalState);
+		this.operators = new ArrayList<Operator>(operators);
+	}
+
+	/**
+	 * Returns the operators for this domain.
+	 * 
+	 * @return
+	 */
+	public List<Operator> getOperators() {
+		return this.operators;
+	}
+
+	/**
+	 * Returns the initial state of this domain.
+	 * 
+	 * @return
+	 */
+	public List<Proposition> getInitialState() {
+		return this.initialState;
+	}
+
+	/**
+	 * Returns the goal state of this domain.
+	 * 
+	 * @return
+	 */
+	public List<Proposition> getGoalState() {
+		return this.goalState;
+	}
+
+	/**
+	 * Sets the operators in a planning problem.
+	 * 
+	 * @param operators
+	 */
+	public void setOperators(List<Operator> operators) {
+		this.operators = operators;
+	}
+
+	public boolean mustGuaranteeBestPlan() {
+		return !maxGuarantees.isEmpty() || !minGuarantees.isEmpty();
+	}
+
+	public boolean satifiesQoS(PlanResult plan) {
+
+		boolean satisfiesQoS = true;
+
+		for (QosBound qosBound : desiredValues) {
+			QoSAggregator qoSAggregator = getQoSAggregator(qosBound.getMetricName());
+			Double planValue = qoSAggregator.getPlanQoSAggregatedValue(plan);
+			if (qosBound.isLowerBound()) {
+				satisfiesQoS = satisfiesQoS && planValue >= qosBound.getValue();
+			} else {
+				satisfiesQoS = satisfiesQoS && planValue <= qosBound.getValue();
+			}
+		}
+
+		return satisfiesQoS;
+	}
+
+	/**
+	 * @return true if plan1 is "better" than plan2
+	 */
+	public boolean comparePlans(PlanResult plan1, PlanResult plan2) {
+		double factorPlan1 = 0;
+		double factorPlan2 = 0;
+
+		for (String max : maxGuarantees) {
+			QoSAggregator qoSAggregator = getQoSAggregator(max);
+			Double plan1Value = qoSAggregator.getPlanQoSAggregatedValue(plan1);
+			Double plan2Value = qoSAggregator.getPlanQoSAggregatedValue(plan2);
+			
+			
+			factorPlan1 = factorPlan1 + getFactor(1 / plan1Value, 1/plan2Value);
+			factorPlan2 = factorPlan2 + getFactor(1 / plan2Value, 1/plan1Value);
+		}
+
+		for (String min : minGuarantees) {
+			QoSAggregator qoSAggregator = getQoSAggregator(min);
+			Double plan1Value = qoSAggregator.getPlanQoSAggregatedValue(plan1);
+			Double plan2Value = qoSAggregator.getPlanQoSAggregatedValue(plan2);
+			
+			factorPlan1 = factorPlan1 + getFactor(plan1Value, plan2Value);
+			factorPlan2 = factorPlan2 + getFactor(plan2Value, plan1Value);
+		}
+
+		return factorPlan1 < factorPlan2;
+	}
+
+	private double getFactor(double val1, double val2) {
+		return val1 / val2;
+	}
+
+	public void setQoSGoals() {
+
+		desiredValues.clear();
+		maxGuarantees.clear();
+		minGuarantees.clear();
+		
+		List<Proposition> propositionsToRemoveFromGoal = new ArrayList<Proposition>();
+		for (Proposition proposition : goalState) {
+			String propositionName = proposition.getFunctor();
+			if (DESIRED_QOS.equals(propositionName)) {
+				setDesiredQoS(proposition);
+				propositionsToRemoveFromGoal.add(proposition);
+			}
+			if (MAX_QOS.equals(propositionName)) {
+				setMaxQoS(proposition);
+				propositionsToRemoveFromGoal.add(proposition);
+			}
+			if (MIN_QOS.equals(propositionName)) {
+				setMinQoS(proposition);
+				propositionsToRemoveFromGoal.add(proposition);
+			}
+		}
+
+		goalState.removeAll(propositionsToRemoveFromGoal);
+	}
+
+	private void setDesiredQoS(Proposition proposition) {
+		List<Term> terms = proposition.getTerms();
+		if (terms.size() < 2) {
+			throw new RuntimeException(
+					"Invalid DESIRED goal. expected [desired(Metric, Value, UpperBound or LowerBound)]");
+		}
+		String qosMetricName = terms.get(0).toString();
+		String qosBoundValue = terms.get(1).toString();
+		QoSMetric qosMetric = new QoSMetric(qosMetricName, new Double(
+				qosBoundValue));
+		QosBound qosBound = null;
+
+		if (qosMetricName.equals(QoS.RELIABILITY.value())) {
+			qosBound = QosBound.createLowerBound(qosMetric);
+
+		} else if (qosMetricName.equals(QoS.RESPONSE_TIME.value())) {
+			qosBound = QosBound.createUpperBound(qosMetric);
+		} else {
+			boolean upperBound = false; // by default is an lower bound
+			if (terms.size() >= 3) {
+				String boundLimit = terms.get(2).toString();// UpperBound or
+															// LowerBound
+				upperBound = "UpperBound".equalsIgnoreCase(boundLimit);
+			}
+
+			if (upperBound) {
+				qosBound = QosBound.createUpperBound(qosMetric);
+			} else {
+				qosBound = QosBound.createLowerBound(qosMetric);
+			}
+		}
+
+		desiredValues.add(qosBound);
+	}
+
+	private void setMaxQoS(Proposition proposition) {
+		List<Term> terms = proposition.getTerms();
+		if (terms.isEmpty()) {
+			throw new RuntimeException(
+					"Invalid MAX goal. expected [max(Metric)]");
+		}
+		String qosMetricName = terms.get(0).toString();
+		maxGuarantees.add(qosMetricName);
+	}
+
+	private void setMinQoS(Proposition proposition) {
+		List<Term> terms = proposition.getTerms();
+		if (terms.isEmpty()) {
+			throw new RuntimeException(
+					"Invalid MIN goal. expected [max(Metric)]");
+		}
+		String qosMetricName = terms.get(0).toString();
+		minGuarantees.add(qosMetricName);
+	}
+
+	public boolean isQoSEnabled() {
+		return !desiredValues.isEmpty() || !maxGuarantees.isEmpty()
+				|| !minGuarantees.isEmpty();
+	}
+	
+	public void addQosAggregator(QoSAggregator qoSAggregator){
+		this.qoSAggregators.put(qoSAggregator.getMetricName(), qoSAggregator);
+	}
+	
+	private QoSAggregator getQoSAggregator(final String metricName){
+		QoSAggregator qoSAggregator = qoSAggregators.get(metricName);
+		if(qoSAggregator == null){
+			throw new RuntimeException("QoS Aggregator not defined for metric "+metricName);
+		}
+		
+		return qoSAggregator;
+	}
+}

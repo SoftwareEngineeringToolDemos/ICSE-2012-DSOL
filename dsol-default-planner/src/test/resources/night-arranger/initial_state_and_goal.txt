@@ -1,0 +1,9 @@
+start(searchLocation(userDefinedLocation),
+      selectedGenre(movieGenre),
+	  participants(participants)
+)
+
+goal(forecast(forecast_info, userDefinedLocation), 
+	 list_of_places(restaurants), mapWithMarkers(restaurants),
+	 reviewsIncluded(restaurants), theater(selectedTheater),
+	 invitationSent(participants))

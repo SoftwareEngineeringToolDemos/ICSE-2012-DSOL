@@ -1,0 +1,235 @@
+<html>
+<head>
+<title>.:: DSOL Management - Instances ::.</title>
+
+<link type="text/css" href="../res/css/ui-lightness/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+<link type="text/css" href="../res/css/general.css" rel="stylesheet" />
+<link type="text/css" href="../res/css/instance.css" rel="stylesheet" />
+	
+<script type="text/javascript" src="../res/js/jquery-1.6.4.js"></script>
+<script type="text/javascript" src="../res/js/jquery.json-2.2.min.js"></script>
+<script type="text/javascript" src="../res/js/jquery-ui-1.8.16.custom.min.js"></script>
+<script type="text/javascript" src="../res/js/general.js"></script>
+<script type="text/javascript" src="../res/js/instance.js"></script>
+
+<script type="text/javascript">
+
+	var instance_ref = location.pathname.split("/").reverse()[0];
+	var info;
+	
+	$.ajax({
+		  url: '../../management/instances/'+instance_ref,
+		  success: function(data) {info = data;},
+		  dataType: "json",
+		  async:false
+	});
+	
+	var actions = info["planner"]["actions"];
+	var concrete_actions = info["concrete_actions"]["actions"];
+	var concrete_actions_classes = info["concrete_actions"]["classes"];
+	
+	var id = info['id'];
+	
+	var new_actions = [];
+	var deleted_actions = [];
+	var deleted_classes = [];
+	
+	var steps = [];
+	var removed_steps = [];
+	
+	//Used by the dialog logic to know if the data should be sent
+	var send_data = false;
+	var applyForRunningInstances = false;
+	var reload = false;
+	
+	$(document).ready(function(){
+		
+		
+				$("#messages").dialog({
+					autoOpen : false,
+					modal : true,
+					close : function() {
+						if (reload) {
+							reload = false;
+							window.location.reload();
+						}
+					}
+				});
+				$("#form_action_div").dialog({
+					autoOpen : false,
+					modal : true,
+					close : function(event, ui) {
+						resetNewAction();
+					}
+				});
+
+				$("#test_div").dialog({
+					autoOpen : false,
+					modal : true,
+					width : 500,
+					open : function() {
+						steps = [];
+						removed_steps = [];
+						$("#planResult").html("");
+						$("#initial_state").val("");
+						$("#goal").val("");
+					}
+				});
+
+				$("#dialog_concrete_actions").dialog({
+					autoOpen : false,
+					modal : true,
+					width : 500
+				});
+
+				$('#load_actions').get(0).setAttribute('action',
+						window.location.pathname + "/upload-actions"); //this works
+				$('#upload_jar').get(0).setAttribute('action', window.location.pathname + "/upload-jar");
+
+				$("#dialog-confirm").dialog({
+					resizable : false,
+					height : 200,
+					modal : true,
+					autoOpen : false,
+					open : function() {
+						send_data = false;
+					},
+					close : function() {
+						if (send_data) {
+							save(applyForRunningInstances);
+						}
+					},
+					buttons : {
+						"Yes" : function() {
+							send_data = true;
+							applyForRunningInstances = true;
+							$(this).dialog("close");
+						},
+						"No" : function() {
+							send_data = true;
+							applyForRunningInstances = false;
+							$(this).dialog("close");
+						}
+					}
+				});
+
+				$("#new_action_link,#save,#back,#test,#plan").button();
+
+				//Save button
+				$("#save").click(function() {
+					if (instance_ref == "dsol_base") {// it means that the default actions
+						// are being modified
+						$("#dialog-confirm").dialog('open');// see dialog definition to
+						// understand cotrol flow
+						// after the dialog is
+						// closed
+					} else {
+						// if actions for a single instance is being modified, for sure it
+						// will not be applied for all running instances
+						save(false);
+					}
+				});
+				
+				//Home link action
+				$("#home").click(function() {
+					var parts = location.pathname.split("/");
+					window.location="/"+parts[1]+"/"+parts[2];
+				});
+
+				//Loading page info
+				if (id != 'dsol_base') {
+					$("#for_instance").html("&nbsp;for instance " + id);
+				}
+				for ( var i = 0; i < actions.length; i++) {
+					add_action_to_table(actions[i]);
+				}
+				for ( var i = 0; i < concrete_actions_classes.length; i++) {
+					add_concrete_action_class(concrete_actions_classes[i], i);
+				}
+			});
+</script>
+
+</head>
+
+<body>
+	<!-- invisible iframe. Used to load actions. -->
+	<iframe name="actions_result" style="display:none;"></iframe>
+	<!-- DIALOGS -->
+	<div id="dialog-confirm" title="Apply for running instances?">
+		<p>
+			<span class="ui-icon ui-icon-alert"
+				style="float: left; margin: 0 7px 20px 0;"></span>
+				Would you like to apply changes also for running instances?
+		</p>
+	</div>
+	<div id="dialog_concrete_actions" title="Concrete Actions"></div>
+	<div id="form_action_div" title="Add new abstract action">
+		<form id="form_action" name="form_abstract_actions">
+			<div>
+				Name: <input type="text" id="action_name" name="" id="action_name">
+			</div>
+			<div style="margin-top: 2px;">
+				<input type="checkbox" value="true" name="seam" id="seam"> <label for="seam">Seam action?</label>
+			</div>
+			<div style="margin-top: 2px;">
+				Parameters<a id="param_link" href="javascript:add_param();" class="ui-icon ui-icon-plus" style="float: right;">+</a>
+				<div id="params"></div>
+			</div>
+			<br clear="all" />
+			<div style="margin-top: 2px;">
+				Pre-conditions<a id="pre_link" href="javascript:add_pre();" class="ui-icon ui-icon-plus" style="float: right;">+</a>
+				<div id="pre"></div>
+			</div>
+			<br clear="all" />
+			<div style="margin-top: 2px;">
+				Post-conditions<a id="post_link" href="javascript:add_post();" class="ui-icon ui-icon-plus" style="float: right;">+</a>
+				<div id="post"></div>
+			</div>
+			<br clear="all" />
+			<div style="margin-top: 2px;">
+				<input type="button" onclick="add()" value="OK" />
+			</div> 
+		</form>
+	</div>
+	<div id="test_div" title="Test Orchestration Model">
+			<div>Initial state <input type="text" name="initial_state" id="initial_state" style="width:400px"/></div>
+			<div style="margin-left: 38px;">Goal <input name="goal" id="goal" type="text" style="width:350px"/><input type="button" onclick="plan()" value="Plan" id="plan" style="font-size: 11px;"/></div>
+			<div id="planResult">
+			</div>
+	</div>
+	<div id="messages" title="Attention"></div>
+	<!--END DIALOGS -->
+	
+	<div id="welcome"><h1><a href="#" id="home">Home</a> &gt; Available actions<span id="for_instance"></span></h1></div>
+	<a id="save">Save Changes</a><a href="javascript:$('#test_div').dialog('open');" id="test">Test</a>
+		<h2>Abstract actions</h2>
+		<a href="javascript:showForm();" id="new_action_link" style="float:left;">+ New Abstract Action</a>
+		<form name="load_actions" id="load_actions" method="post" enctype="multipart/form-data" target="actions_result">
+			<label for="file">Load abstract actions from source code:</label><input id="file" type="file" name="actions_file" style="border:1px dashed black;"/>
+			<input type="submit" value="Load"/>
+		</form>
+		
+	<div style="clear: both;"></div>
+	<div id="actions_container"></div>
+	<br clear="all"/>
+	<h2>Concrete actions classes</h2>
+	<a href="javascript:add_class_field();" id="new_action_link">+ New Concrete Action Class</a>
+	<div>
+		<form name="form_concrete_actions">
+			<ul id="concrete_actions_container">
+			
+			</ul>
+		</form>
+	</div>
+	<h2>Classpath</h2>
+	<div id="uploads">
+		<form  name="upload_jar" id="upload_jar" method="post" enctype="multipart/form-data" target="jar_frame">
+			<label for="file">Select jar:</label> <input id="file" type="file" name="jar_file" style="border:1px dashed black;"/>
+			<input type="submit" value="Upload"/>
+		</form>
+		<iframe name="jar_frame" seamless="seamless" style="border:none;color:red;" sandbox="allow-forms" width="100%" height="50px;"></iframe>
+	</div>
+	
+
+</body>
+</html>

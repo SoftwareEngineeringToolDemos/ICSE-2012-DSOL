@@ -1,0 +1,19 @@
+start(
+from(from),
+eventId(eventId),
+transportation(airplane),
+accommodation(hotel),
+paymentMethod(credit_card)
+)
+
+goal(
+(	ticketBought(event), 
+	transportationBookedAndPaid(from,event.city,event.date,event.dayAfter),
+	accommodationBookedAndPaid(event.city,event.date,event.dayAfter)) 
+	
+	or
+
+(	ticketBought(event), 
+	transportationBookedAndPaid(from,event.city,event.dayBefore,event.dayAfter),
+	accommodationBookedAndPaid(event.city,event.dayBefore,event.dayAfter))
+)

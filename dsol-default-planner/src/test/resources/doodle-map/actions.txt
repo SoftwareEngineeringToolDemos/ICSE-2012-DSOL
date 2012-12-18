@@ -1,0 +1,27 @@
+action getCoordinate(Location)
+pre: searchLocation(Location)
+post: searchCoordinate(coordinate)
+
+action findAvailablePlacesByLocation(Location, Query)
+pre: searchLocation(Location), searchQuery(Query)
+post: listofplaces(availablePlaces)
+
+action findAvailablePlacesByCoordinate(Coordinate,Query)
+pre: searchCoordinate(Coordinate), searchQuery(Query)
+post: listofplaces(availablePlaces)
+
+action createMapUsingGoogle(Places)
+pre: listofplaces(Places)
+post: map(mapWithMarkedPlaces), mapCreated
+
+action createMapUsingBing(Places)
+pre: listofplaces(Places)
+post: map(mapWithMarkedPlaces), mapCreated
+
+action createOptions(Places)
+pre: listofplaces(Places)
+post: listofoptions(options)
+
+action createPoll(Options,PollTitle)
+pre: title(PollTitle), listofoptions(Options)
+post: pollCreated

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+						http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+						http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<context:component-scan base-package="org.dsol.config"/>
+	<util:properties id="dsolProperties" location="classpath:/dsol.properties"/>
+
+	<bean id="VersionManager" class="org.dsol.config.VersionManagerImpl">
+	</bean>
+
+<!-- 	<bean id="MonitorCounter" class="org.dsol.monitoring.MonitorCounterImpl">
+		<constructor-arg ref="planner"></constructor-arg>
+	</bean> -->
+
+	<bean id="OrchestrationInterfaceInfo" class="org.dsol.config.OrchestrationInterfaceInfo">
+		<constructor-arg ref="dsolConfig"></constructor-arg>	
+	</bean>
+
+	<!-- the factory bean, which contains a method called createInstance() -->
+	<bean id="serviceLocator" class="org.dsol.engine.EntrypointFactory">
+		<constructor-arg ref="OrchestrationInterfaceInfo"></constructor-arg>
+		<constructor-arg ref="dsol-service-proxy"></constructor-arg>
+	</bean>
+
+	<!-- the bean to be created via the factory bean -->
+	<bean id="dsol-endpoint" factory-bean="serviceLocator"
+		factory-method="createInstance" />
+
+	<bean id="dsol-service-proxy" class="org.dsol.WebServiceProxy">
+		<constructor-arg ref="dsolConfig"></constructor-arg>
+		<constructor-arg ref="ServiceSelector"></constructor-arg>
+		<constructor-arg ref="VersionManager"></constructor-arg>
+		<constructor-arg ref="OrchestrationInterfaceInfo"></constructor-arg>
+		<lookup-method name="getPlanner" bean="planner"/>		
+	</bean>
+
+	<bean id="dsol-instance-management" class="org.dsol.management.InstanceManagmentImpl">
+		<constructor-arg ref="dsol-endpoint"></constructor-arg>
+		<constructor-arg ref="planner"></constructor-arg>
+	</bean>
+	
+	<bean id="dsol-services-management" class="org.dsol.api.services.ServicesManagementImpl">
+		<constructor-arg ref="ServiceSelector"></constructor-arg>
+	</bean>
+
+	<bean id="dsol-application" class="org.dsol.api.ApplicationImpl">
+		<constructor-arg ref="planner"></constructor-arg>
+		<constructor-arg value="#{dsolConfig.classpathFolder}"></constructor-arg>
+	</bean>
+	<bean id="dsol-index" class="org.dsol.api.Index"></bean>
+</beans>

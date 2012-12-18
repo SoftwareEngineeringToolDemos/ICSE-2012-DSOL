@@ -1,0 +1,7 @@
+start(
+from(from),
+eventId(eventId),
+transportation(airplane),
+accommodation(hotel),
+paymentMethod(credit_card)
+)

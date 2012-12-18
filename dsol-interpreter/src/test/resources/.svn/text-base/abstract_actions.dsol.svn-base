@@ -1,0 +1,16 @@
+action getStarted
+pre: true
+post: started
+
+action hello(Name,LastName)
+pre: started, name(Name),last_name(LastName)
+post: hello_sent(Name)
+
+action hello2(LastName)
+pre: last_name(LastName)
+post: hello_sent(LastName)
+
+
+action translate_message(Message)
+pre: message(Message)
+post: message_translated(Message,translated_message)

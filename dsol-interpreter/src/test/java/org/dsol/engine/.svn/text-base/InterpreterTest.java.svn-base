@@ -1,0 +1,126 @@
+package org.dsol.engine;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import junit.framework.Assert;
+
+import org.dsol.AbstractActionMock;
+import org.dsol.planner.api.AbstractAction;
+import org.dsol.planner.api.Plan;
+import org.junit.Test;
+
+
+public class InterpreterTest {
+	
+	@Test
+	public void newPlanAdjustmentWithoutCompensation(){
+		Plan oldPlan = getPlan1();
+		
+		//set 
+		oldPlan.markFirstActionsAsExecuted(2);
+		
+		Interpreter engine = new Interpreter();
+		
+		Plan newPlan = getPlan2();
+		engine.adjustPlans(newPlan, oldPlan, new AbstractActionMock("step3(p1)"));
+		
+		Assert.assertTrue(newPlan.get(0).isExecuted());
+		Assert.assertTrue(!newPlan.get(0).isMarkedForCompensation());
+		Assert.assertTrue(newPlan.get(1).isExecuted());
+		Assert.assertTrue(!newPlan.get(1).isMarkedForCompensation());
+		Assert.assertTrue(!newPlan.get(2).isExecuted());
+		Assert.assertTrue(!newPlan.get(2).isMarkedForCompensation());
+		Assert.assertTrue(!newPlan.get(3).isExecuted());
+		Assert.assertTrue(!newPlan.get(3).isMarkedForCompensation());
+		Assert.assertTrue(!newPlan.get(4).isExecuted());
+		Assert.assertTrue(!newPlan.get(4).isMarkedForCompensation());
+		Assert.assertTrue(!newPlan.get(5).isExecuted());
+		Assert.assertTrue(!newPlan.get(5).isMarkedForCompensation());
+		
+		Assert.assertTrue(oldPlan.get(0).isExecuted());
+		Assert.assertTrue(!oldPlan.get(0).isMarkedForCompensation());
+		Assert.assertTrue(oldPlan.get(1).isExecuted());
+		Assert.assertTrue(!oldPlan.get(1).isMarkedForCompensation());
+		Assert.assertTrue(!oldPlan.get(2).isExecuted());
+		Assert.assertTrue(!oldPlan.get(2).isMarkedForCompensation());
+		Assert.assertTrue(!oldPlan.get(3).isExecuted());
+		Assert.assertTrue(!oldPlan.get(3).isMarkedForCompensation());
+		Assert.assertTrue(!oldPlan.get(4).isExecuted());
+		Assert.assertTrue(!oldPlan.get(4).isMarkedForCompensation());
+		Assert.assertTrue(!oldPlan.get(5).isExecuted());
+		Assert.assertTrue(!oldPlan.get(5).isMarkedForCompensation());
+
+	}
+	
+	
+	@Test
+	public void newPlanAdjustmentWithCompensation(){
+		Plan oldPlan = getPlan1();
+		
+		//set 
+		oldPlan.markFirstActionsAsExecuted(3);
+		
+		Interpreter engine = new Interpreter();
+		
+		Plan newPlan = getPlan2();
+		engine.adjustPlans(newPlan, oldPlan, new AbstractActionMock("step4(p4)"));
+		
+		Assert.assertTrue(newPlan.get(0).isExecuted());
+		Assert.assertTrue(!newPlan.get(0).isMarkedForCompensation());
+		Assert.assertTrue(newPlan.get(1).isExecuted());
+		Assert.assertTrue(!newPlan.get(1).isMarkedForCompensation());
+		Assert.assertTrue(!newPlan.get(2).isExecuted());
+		Assert.assertTrue(!newPlan.get(2).isMarkedForCompensation());
+		Assert.assertTrue(!newPlan.get(3).isExecuted());
+		Assert.assertTrue(!newPlan.get(3).isMarkedForCompensation());
+		Assert.assertTrue(!newPlan.get(4).isExecuted());
+		Assert.assertTrue(!newPlan.get(4).isMarkedForCompensation());
+		Assert.assertTrue(!newPlan.get(5).isExecuted());
+		Assert.assertTrue(!newPlan.get(5).isMarkedForCompensation());
+		
+		Assert.assertTrue(oldPlan.get(0).isExecuted());
+		Assert.assertTrue(!oldPlan.get(0).isMarkedForCompensation());
+		Assert.assertTrue(oldPlan.get(1).isExecuted());
+		Assert.assertTrue(!oldPlan.get(1).isMarkedForCompensation());
+		Assert.assertTrue(oldPlan.get(2).isExecuted());
+		Assert.assertTrue(oldPlan.get(2).isMarkedForCompensation());
+		Assert.assertTrue(!oldPlan.get(3).isExecuted());
+		Assert.assertTrue(!oldPlan.get(3).isMarkedForCompensation());
+		Assert.assertTrue(!oldPlan.get(4).isExecuted());
+		Assert.assertTrue(!oldPlan.get(4).isMarkedForCompensation());
+		Assert.assertTrue(!oldPlan.get(5).isExecuted());
+		Assert.assertTrue(!oldPlan.get(5).isMarkedForCompensation());
+
+		
+		
+		
+	}
+	
+	public Plan getPlan1(){
+		
+		List<AbstractAction> actions = new ArrayList<AbstractAction>();
+		actions.add(new AbstractActionMock("step1(p1,p2)"));
+		actions.add(new AbstractActionMock("step2(p1,p2,p3)"));
+		actions.add(new AbstractActionMock("step3(p1)"));
+		actions.add(new AbstractActionMock("step4(p4)"));
+		actions.add(new AbstractActionMock("step5(p2)"));
+		actions.add(new AbstractActionMock("step6(p5)"));
+
+		return new Plan(actions);
+	}
+	
+	public Plan getPlan2(){
+		
+		List<AbstractAction> actions = new ArrayList<AbstractAction>();
+		actions.add(new AbstractActionMock("step1(p1,p2)"));
+		actions.add(new AbstractActionMock("step2(p1,p2,p3)"));
+		actions.add(new AbstractActionMock("step31(p1)"));
+		actions.add(new AbstractActionMock("step41(p4)"));
+		actions.add(new AbstractActionMock("step51(p2)"));
+		actions.add(new AbstractActionMock("step61(p5)"));
+
+		return new Plan(actions);
+	}
+
+}

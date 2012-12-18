@@ -1,0 +1,27 @@
+action bookFlight (From,To,Arrival,Departure)
+pre: 	transportation(airplane),
+		from(From), city(To),
+		date(Arrival),date(Departure),
+		ticketBought(event)
+post: transportationBooked (From,To,Arrival,Departure), at(To,Arrival,Departure), details(transportation)
+
+action bookFlightLowCost (From,To,Arrival,Departure)
+pre: 	transportation(airplane),
+		from(From), city(To),
+		date(Arrival),date(Departure),
+		ticketBought(event)
+post: transportationBooked (From,To,Arrival,Departure), at(To,Arrival,Departure), details(transportation)
+
+action bookTrain (From,To,Arrival,Departure)
+pre: 	transportation(train),
+		from(From), city(To),
+		date(Arrival),date(Departure),
+		ticketBought(event)
+post: transportationBooked (From,To,Arrival,Departure), at(To,Arrival,Departure), details(transportation)
+
+action bookBus (From,To,Arrival,Departure)
+pre: 	transportation(bus),
+		from(From), city(To),
+		date(Arrival),date(Departure),
+		ticketBought(event)
+post: transportationBooked (From,To,Arrival,Departure), at(To,Arrival,Departure), details(transportation)

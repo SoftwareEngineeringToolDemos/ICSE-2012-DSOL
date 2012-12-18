@@ -1,0 +1,28 @@
+action getEvent(Id)
+pre: eventId(Id)
+post: 	event(event), date(event.date),
+		city(event.city), date(event.dayAfter), 
+		date(event.dayBefore)
+
+action buyTicket(Event)
+pre:  event(Event)
+post: ticketBought(Event)
+
+action payWithCreditCard(Details)
+pre: paymentMethod(credit_card),details(Details)
+post: paid(Details)
+
+action payWithBankTransfer(Details)
+pre: paymentMethod(bank_transfer),details(Details)
+post: paid(Details)
+
+seam action bookAndPayTransportation(From,To,Arrival,Departure)
+pre:transportationBooked(From,To,Arrival,Departure), paid(transportation)
+post: transportationBookedAndPaid(From,To,Arrival,Departure)
+
+seam action bookAndPayAccommodation(To,Arrival,Departure)
+pre:accommodationBooked(To,Arrival,Departure),paid(accommodation)
+post: accommodationBookedAndPaid(To,Arrival,Departure)
+
+-include(transportation.txt)
+-include(accommodation.txt)
