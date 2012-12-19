@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            name="DSOL Editor"
+            extensions="dsol"
+            icon="icons/dsol.gif"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            class="dsolcoloring.editors.DSOLEditor"
+            id="dsolcoloring.editors.DSOLEditor">
+      </editor>
+   </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            id="org.dsol"
+            name="DSOL">
+      </category>
+      <wizard
+            category="org.dsol"
+            class="dsol.wizard.NewProjectWizard"
+            icon="new_project_icon.png"
+            finalPerspective="org.eclipse.jdt.ui.JavaPerspective"
+            hasPages="true"
+            id="org.dsol.newProject"
+            name="DSOL Project"
+            project="true">
+      </wizard>
+      <wizard
+            category="org.dsol"
+            class="dsol.wizard.NewLibraryWizard"
+            icon="new_library_icon.png"
+            finalPerspective="org.eclipse.jdt.ui.JavaPerspective"
+            hasPages="true"
+            id="org.dsol.newLibrary"
+            name="DSOL Concrete Actions Library"
+            project="true">
+      </wizard>
+   </extension>
+   
+   <extension point="org.eclipse.debug.ui.launchShortcuts">
+  <shortcut
+    label="DSOL Application"
+    helpContextId="org.eclipse.jdt.debug.ui.shortcut_local_java_application"
+    modes="run, debug"
+    class="dsol.DSOLLaunchShortcut"
+    description="Launch a DSOL application"
+    id="org.eclipse.jdt.debug.ui.localJavaShortcut">
+    <description
+     description="Runs a DSOL application"
+     mode="run">
+    </description>
+    <description
+     description="Debugs a DSOL application"
+     mode="debug">
+    </description>
+  <contextualLaunch>
+  <enablement>
+    <with variable="selection">
+     <count value="1"/>
+      <iterate>
+         <and>
+          <test property="org.eclipse.jdt.launching.isContainer"/>
+          <test property="org.eclipse.jdt.launching.hasProjectNature" args="org.dsol.dsolNature"/>
+         </and>
+      </iterate>
+     </with>
+  </enablement>
+  </contextualLaunch>
+  <configurationType id="org.eclipse.jdt.launching.localJavaApplication" ></configurationType>
+  </shortcut>
+</extension>
+
+<extension point="org.eclipse.ui.menus">
+	<menuContribution locationURI="popup:#CompilationUnitEditorContext?before=additions">
+		<menu id="dsol" label="DSOL"></menu>       
+	</menuContribution>
+
+    <menuContribution locationURI="popup:dsol" >
+        <command commandId="org.dsol.add_abstract_action"/>
+    </menuContribution>
+    <menuContribution locationURI="popup:dsol" >
+        <command commandId="org.dsol.add_concrete_action"/>
+    </menuContribution>
+    <menuContribution locationURI="popup:dsol" >
+        <command commandId="org.dsol.add_service"/>
+    </menuContribution>
+
+</extension>
+<extension point="org.eclipse.ui.commands">
+	<command id="org.dsol.add_abstract_action" defaultHandler="dsol.handlers.EmptyHandler" name="Add Abstract Action"/>
+    <command id="org.dsol.add_concrete_action" defaultHandler="dsol.handlers.AddConcreteActionHandler" name="Add Concrete Action"/>
+    <command id="org.dsol.add_service" defaultHandler="dsol.handlers.EmptyHandler" name="Add Service Definition"/>
+</extension>
+</plugin>

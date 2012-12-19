@@ -1,0 +1,20 @@
+package actions;
+
+import java.io.StringWriter;
+
+import org.dsol.annotation.Action;
+import org.dsol.annotation.ReturnValue;
+
+public class #{ClassName} {
+	
+	@Action
+	@ReturnValue("echo_message")
+	public String createEchoMessage(Integer numberOfTimes, String message){
+		StringWriter echo = new StringWriter();
+		for (int i = 0; i < numberOfTimes; i++) {
+			echo.append(message);
+		}
+		return echo.toString();
+	}
+		
+}

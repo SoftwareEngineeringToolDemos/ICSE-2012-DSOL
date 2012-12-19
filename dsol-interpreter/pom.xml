@@ -18,6 +18,18 @@
 			<artifactId>dsol-planner-plugin-api</artifactId>
 			<version>${dsol.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>dsol-annotations</artifactId>
+			<version>${dsol.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>dsol-default-planner-plugin-impl</artifactId>
+			<scope>test</scope>
+			<version>${dsol.version}</version>
+		</dependency>
+
 		<!-- Used for all Web Service related parts -->
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
@@ -82,12 +94,6 @@
 			<version>1.8.3</version>
 		</dependency>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>dsol-default-planner-plugin-impl</artifactId>
-			<scope>test</scope>
-			<version>${dsol.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.jampl</groupId>
 			<artifactId>jampl</artifactId>
 			<version>1-SNAPSHOT</version>
@@ -96,11 +102,6 @@
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 			<version>1.7.1</version>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>dsol-annotations</artifactId>
-			<version>${dsol.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.jayway.jsonpath</groupId>

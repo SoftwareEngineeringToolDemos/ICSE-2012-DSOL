@@ -1,0 +1,15 @@
+#{packageName}
+
+import javax.jws.WebParam;
+import javax.jws.WebResult;
+import javax.jws.WebService;
+
+@WebService
+public interface #{OrchestrationInterfaceName}{
+
+	@WebResult(name="echo_message")
+	public String echo(@WebParam(name="times") Integer n,
+					   @WebParam(name="message") String msg);
+	
+	
+}

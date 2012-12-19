@@ -1,0 +1,23 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DSOL Plugin
+Bundle-SymbolicName: dsol;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: dsol.Activator
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-Vendor: DSOL
+Export-Package: dsol,
+ dsol.handlers,
+ dsol.wizard
+Require-Bundle: org.eclipse.jdt.debug.ui,
+ org.eclipse.m2e.core.ui,
+ org.eclipse.debug.ui,
+ org.eclipse.jdt.core,
+ org.eclipse.jface.text,
+ org.eclipse.m2e.core,
+ org.eclipse.core.runtime,
+ org.eclipse.jdt.ui,
+ org.eclipse.ui,
+ org.eclipse.ui.editors,
+ org.eclipse.ui.ide
