@@ -1,0 +1,16 @@
+1. git clone https://github.com/leandroshp/jAMPL.git
+2. cd jAMPL
+3. mvn clean
+4. mvn -D maven.test.skip=true install
+5. cd ..
+6. git clone https://github.com/leandroshp/dsol.git
+7. cd dsol
+8. mvn clean
+9. mvn install
+10. cd poll-translator
+11. mvn clean compile exec:java
+12. Open http://localhost:8088/poll-translator/api
+
+To run client:
+1. cd dsol/dsol/poll-translator-client
+2. mvn tomcat:run
