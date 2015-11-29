@@ -8,7 +8,7 @@ This repository _is not_ the original repository for this tool. Here are some li
 In this repository, for DSOL you will find:
 * :white_check_mark: Source code (available)
 * :x: The original tool (The tool is generated from the source code provided)
-* ":white_check_mark: [Virtual machine containing tool] (https://drive.google.com/drive/folders/0B3GbPov8x279UFNIOFJGN1hlUEk)
+* :white_check_mark: [Virtual machine containing tool] (https://drive.google.com/drive/folders/0B3GbPov8x279UFNIOFJGN1hlUEk)
 
 This repository was constructed by [Joe Decker](https://github.com/jodeck80) under the supervision of [Dr. Emerson Murphy-Hill](https://github.com/CaptainEmerson). Thanks to Dr. Leandro Pinto for his help in establishing this repository.
 
