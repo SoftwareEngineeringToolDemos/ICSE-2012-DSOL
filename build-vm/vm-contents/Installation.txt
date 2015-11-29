@@ -1,16 +1,19 @@
-1. git clone https://github.com/leandroshp/jAMPL.git
-2. cd jAMPL
+To install the tool from scratch:
+
+1. git clone https://github.com/leandroshp/jAMPL.git /home/vagrant/jAMPL
+2. cd /home/vagrant/jAMPL
 3. mvn clean
 4. mvn -D maven.test.skip=true install
-5. cd ..
-6. git clone https://github.com/leandroshp/dsol.git
-7. cd dsol
-8. mvn clean
-9. mvn install
-10. cd poll-translator
-11. mvn clean compile exec:java
-12. Open http://localhost:8088/poll-translator/api
+5. git clone https://github.com/SoftwareEngineeringToolDemos/ICSE-2012-DSOL.git /home/vagrant/ICSE-2012-DSOL
+6. cd /home/vagrant/ICSE-2012-DSOL
+7. mvn clean
+8. mvn install
+9. cd /home/vagrant/ICSE-2012-DSOL/poll-translator
+10. mvn clean compile exec:java &
+11. Open http://localhost:8088/poll-translator/api
+
 
 To run client:
 1. cd dsol/dsol/poll-translator-client
 2. mvn tomcat:run
+
